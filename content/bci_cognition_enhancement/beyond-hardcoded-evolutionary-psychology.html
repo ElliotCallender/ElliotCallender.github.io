@@ -1,0 +1,117 @@
+<p><a href="https://www.lesswrong.com/users/steve2152"><i>Steven Byrnes</i></a><i> has written quite a lot on brain-like AGI algorithms. I'll reiterate here of a small part of his work, but you'd be better off reading his stuff directly.</i></p>
+
+<p><i>For the ideas which inspired me, see </i><a href="https://www.lesswrong.com/s/HzcM2dkCq7fwXBej8/p/wBHSYwqssBGCnwvHg"><i>here</i></a><i>, </i><a href="https://www.lesswrong.com/s/HzcM2dkCq7fwXBej8/p/hE56gYi5d68uux9oM"><i>here</i></a><i>, and </i><a href="https://www.lesswrong.com/posts/FtwMA5fenkHeomz52/intuitive-self-models-1-preliminaries"><i>here</i></a><i>.</i></p>
+
+<p><i>This post has good handles for intuitively applying neuroscience to rationality. Don't mistake my "simulator" cluster for a distilled and reduced concept; it's "lumpy rock", not "skewed prism of seafloor </i><a href="https://geology.com/meteorites/impactites.shtml"><i>impactite</i></a><i> from the late Devonian".</i></p>
+
+<hr/>
+
+<p>My (loose) extension of Steve's models of human minds predicts that we'll get stuck in local minima of self-reinforcing nonreality; with this knowledge, we can more directly target the underlying mechanisms of cognitive biases.</p>
+
+<p>Deliberately tracking what you're <i>actually</i> optimizing for is one example skill which seems worth developing despite its time cost. In fact, many rationality skills (like noticing your confusion and scout mindset) are species of this overlying stance.</p>
+
+<p>Let's take <a href="https://www.lesswrong.com/posts/yFJ7vCjefBxnTchmG/outline-of-galef-s-scout-mindset">scout mindset</a> as an example.</p>
+
+<p>While discussing something, the goal for rationalists usually isn't to convince the other person of their ideas, but rather to come to truthier beliefs.</p>
+
+<p>One should therefore be vigilant, lest they fall into a combative posture, since this makes them slow to update.</p>
+
+<blockquote><p><i>Cool! Is there a principled way to train this?</i></p><p>Do you mean trigger-action patterns?</p><p><i>No; TAPs take conscious effort to implement. How do you make it an unconscious System 1 response, the same way I keep my balance while walking?</i></p><p>Lots of practice.</p><p><i>But what if I have stronger subconscious pressures pushing me away from scout mindset? Like, sometimes I want some idea to work, and then I notice myself defending it. But then it feels like something blocks me from seeing that defensive posture. It's like a part of my brain is trying to keep me blissfully unaware. You're telling me to run uphill, but I want to remove the hill entirely.</i></p><p>If you keep practicing it, you'll learn to do it subconsciously! Then it won't take any effort, just like walking.</p><p><i>But as an infant, I </i><i><b>wanted</b></i><i> to walk; it got rewarded. Rationality isn't emotionally satisfying on the </i><a href="https://www.lesswrong.com/posts/JcpzFpPBSmzuksmWM/the-5-second-level"><i>timescales</i></a><i> I care about, at least not by default. My conscious practice builds a sandcastle, then tomorrow the tide washes away all but a shallow lump. Sure, after 3 decades my hill might rise above the waves, but what stops me from building a levee?</i><sup><a href="#fn1" id="fnref1">1</a></sup></p></blockquote>
+
+<p>Perhaps modern neuroscience can help this person be <i>rewarded</i> by rational thoughts? Let me just...</p>
+
+<p><br/></p>
+
+<p><b>Simulators</b></p>
+
+<p>Brains run simulations. I've not seen Steve claim this<sup><a href="#fn2" id="fnref2">2</a></sup>, hence "simulations" instead of "<a href="https://www.lesswrong.com/s/HzcM2dkCq7fwXBej8/p/Y3bkJ59j4dciiLYyw">thought</a> <a href="https://www.lesswrong.com/s/HzcM2dkCq7fwXBej8/p/F759WQ8iKjqBncDki">predictors</a>".</p>
+
+<p><br/></p>
+
+<p>Let's say that I go parasailing in the Andes. During flight, my mind absorbs tons of data about the sky, landscape, my gear, etc. When I get home, my brain runs lots of internal simulations about flying through the mountains, birds, and more specific stuff about, say, wind patterns. These simulations are based off of those earlier sensory experiences.</p>
+
+<p>In this way, my mind converts the tidbits of data in my flight memories into lots of training examples for itself. To a Solomonoff inductor (an imagined perfect intelligence), my simulations don't add any extra information about my flight compared to my memories.</p>
+
+<p>But I'm not a Solomonoff inductor, so my mind needs many self-generated training examples to fully internalize it.</p>
+
+<p>(This is one reason we're so damn sample-efficient <a href="https://www.lesswrong.com/posts/9rCTjbJpZB4KzqhiQ/you-can-t-imitation-learn-how-to-continual-learn">compared to LLMs</a>. We can keep generating internal training data. LLMs, by comparison, have to be fed training data by some externally bottlenecked process like internet scraping or human-written RL environments.)</p>
+
+<p>From what I see, LessWrong rationality advice is almost entirely "ingest this particular training example", which works great if your simulators are faithful to the content of that data. But they're not.</p>
+
+<p>Simulator dynamics cause cognitive biases <i>and actively prevent you from fixing them</i>.</p>
+
+<p><br/></p>
+
+<p><b>Drift; cognitive attractors</b></p>
+
+<p>Simulators can be influenced by each other cyclicly; they're not straightforwardly truthful updates on sensory data. As an extreme example, these internal thoughts<sup><a href="#fn3" id="fnref3">3</a></sup>:</p>
+
+<blockquote><p><i>Blah unfocused daydreaming blah</i></p><p>If my best friend of 15 years attacked me with a frying pan, I'd probably punch him in the face and try to dodge the pan since it's slow to swing a cast iron pan like that</p><p><i>Imagining friend misses and shatters a window with the pot momentum</i></p><p><i>"Bro, stop!"</i></p></blockquote>
+
+<p>Now I like my friend less! He did absolutely nothing to imply that he'd attack me with a frying pan. In fact, I had a stomache cramp I didn't notice, which biased my idle thoughts towards pain, and my friend happened to be on my mind because I visited him that morning.</p>
+
+<p>A more typical example for the audience of this post:</p>
+
+<blockquote><p><i>After a conversation with a non-rationalist family member about my decision to drop out of my undergrad math degree</i></p><p>She just doesn't understand. AI safety is too weird of a subject, and she's stuck on immigration or whatever Facebook feeds her all day.</p><p><i>Option value</i></p><p>What's that? Oh, I lost my train of thought. Why can't I remember what I was just thinking about? Anyway, humanity doesn't have time for me to screw around. This is urgent.</p></blockquote>
+
+<p>Cognitive simulators are a dynamical system, in the same sense as weather systems and Conway's Game of Life. At least in humans, simulators can loop back on themselves and/or <a href="https://www.lesswrong.com/s/qhdHbCJ3PYesL9dde">influence parallel simulators</a> such that they fall into attractor basins. </p>
+
+<p>When a simulator predicts a thought/action X will be rewarded, X-promoters <i>actually do</i> get rewarded as intended; but now, X-promoters indirectly reinforce the prediction that X is rewarding. You're pinned in a loop.</p>
+
+<p>Like water running down a hill, <a href="https://www.lesswrong.com/s/M3TJ2fTCzoQq66NBJ">minds can get stuck in local puddles</a>.</p>
+
+<hr/>
+
+<p><b>What are you optimizing in your head</b></p>
+
+<p>From "<a href="https://www.lesswrong.com/posts/bhLxWTkRc8GXunFcB/what-are-you-tracking-in-your-head">What Are You Tracking In Your Head</a>"<sup><a href="#fn4" id="fnref4">4</a></sup>:</p>
+
+<blockquote><p>the expert tracks some extra information/estimate in their head. Usually the extra information is an estimate of some not-directly-observed aspect of the system of interest. From outside, watching the expert work, that extra tracking is largely invisible; the expert may not even be aware of it themselves. Rarely are these mental tracking skills explicitly taught. And yet, based on personal experience, each of these is a central piece of performing the task well - arguably <i>the</i> central piece, in most cases.</p></blockquote>
+
+<p>Do you track what you're locally optimizing for? Are you intuitively aware of whatever queries/searches you're running, all of the time?</p>
+
+<p>Lots of biases don't feel wrong (to an untrained person) because they don't realize they're running the wrong search. Their mind is aiming for something completely different from what they "think" they're doing. If you ask such a person what they're trying to do, they'll describe something different from what they'd feel by introspecting during the process.</p>
+
+<p>Say I'm explaining to someone why they're wrong about X. I "want" both of us to get to the truth; but I'm locally intuitively trying to get them to change their mind. They're wrong, after all. I'm speaking some words I think will get them to believe not X, but Y...</p>
+
+<p>So now I'm optimizing, intuitively but not explicitly, to change this person's beliefs. What do you expect I'll feel if they give a strong counterargument?</p>
+
+<p>I'll feel defensive. I don't endorse this feeling, but my short-term intuitive goal is beset!</p>
+
+<p>Were I aware of my intuitive goal instead of merely tracking it, I'd notice the swap. This holds for many classes of error you can find in the Sequences.<sup><a href="#fn5" id="fnref5">5</a></sup></p>
+
+<p><br/></p>
+
+<p><b>Social pulls</b></p>
+
+<p>Humans have quite strong social drives. This is more of a consequence of evolutionarily specified drives than of <a href="https://en.wiktionary.org/wiki/Pournelle%27s_law">architectural inefficiencies</a>, so training tactics differ a bit.</p>
+
+<blockquote><p><i>Working on a LW </i><a href="https://www.lesswrong.com/posts/GC4HKvTae5arh7FCR/bci-cognition-enhancement-is-possible"><i>post</i></a><i> about cognition enhancement; preliminary title </i><b>Need Smarter Humans</b><i> at top of screen</i></p><p><i>Notice that non-rat Altanta folks can see my screen through my office's glass walls</i></p><p>They probably think I'm loony, don't they?</p><p><i>Two minutes later, I'm looking at 3d visualizations of molecules from hydrogel chemistry simulations I'm running</i></p><p>Oh gee, what a happy coincidence that now I look smart and professional to the people behind me! ... Oh. Yikes.</p></blockquote>
+
+<p>Here again, had I been conscious of my immediate optimization target, I would've noticed the prestige-drive pulling me away from good work.</p>
+
+<p>But this goes much deeper. Down to the <a href="https://www.lesswrong.com/posts/KpMNqA5BiCRozCwM3/social-dark-matter">felt sense of what's culturally acceptable/expected</a> by the people around me, and in which ways I care.</p>
+
+<p>Probably surrounding myself with people who think very clearly would help. But that leaves a weird residual mismatch; I don't immediately want to be The Rationalistist, even if my milieu would very much respect that.</p>
+
+<p>No, I want to <i>look like</i> someone with excellent epistemology, not to mention my <a href="https://www.lesswrong.com/posts/cSXZpvqpa9vbGGLtG/thou-art-godshatter">thousand other evolved desires</a>. Culture is only a partial solution, because I still need to actively guide my thought-drift.</p>
+
+<hr/>
+
+<p><b>Negative queries are unnatural (to most people)</b></p>
+
+<p>"Try to falsify your beliefs" is is good advice, but notice that it's a very strange operation to ask of a simulator architecture.</p>
+
+<p>When I run a query like "why is the 3d printer I just bought not working?" my mind can start rolling out possible explanations: clogged nozzle, disconnected wire etc. I have a problem, so my mind searches for trajectories which would explain my experience. Same for social situations, research, driving. I have some current problem and my mind searches forward through explanations and possible actions.</p>
+
+<p>But what would it mean to run the negative query "what would it feel like if my current model of this situation were false?"</p>
+
+<p>Simulators run forward, generating possible continuations from some starting frame. If I ask "what explains this under my current model?", my mind has something to roll out; how's the simulator supposed to run "what explains not(this) under my current model?"</p>
+
+<p>Maybe I spend a lot of time imagining what the inverse shape of each of my models feels like. A priori this seems very wasteful to me, as it's swimming upstream against your hardwired cognitive architecture. But I could imagine it working out.</p>
+
+<p>Confusion, however, is something on which we can run positive queries, and it's trainable. "What am I confused about" slowly but predictably clarifies where reality is biting your models, so long as you're actually optimizing for <a href="https://www.lesswrong.com/s/5bZZZJ5psXrrD5BGb/p/3nZMgRTfFEfHp34Gb">understanding your confusion</a>.</p>
+
+<p>The resulting toolset is very different from trigger-action patterns.</p>
+
+<ol><li id="fn1"><p>See <a href="https://www.lesswrong.com/posts/wanmjz6wkTCNtyKLX/taste-and-shaping">Taste &amp; Shaping</a>.</p><a href="#fnref1"> ↩</a></li><li id="fn2"><p>Engram replay <a href="https://doi.org/10.1002/hipo.22824">seems to be</a> doing something like "running simulations", though much of that is probably also "optimizing the representation of episodic memories for predictive efficiency". Like defragmenting a hard disk drive, but neuromorphic.</p><a href="#fnref2"> ↩</a></li><li id="fn3"><p>I noticed this sort of spiral all the time as a young teenager.</p><a href="#fnref3"> ↩</a></li><li id="fn4"><p>Explicitly citing quote here, not an example monologue.</p><a href="#fnref4"> ↩</a></li><li id="fn5"><p>I might just be saying in more words "deliberately practice rationality", but "deliberate practice" doesn't, to me, properly describe the metacognitive pose one should take therein.</p><a href="#fnref5"> ↩</a></li></ol>

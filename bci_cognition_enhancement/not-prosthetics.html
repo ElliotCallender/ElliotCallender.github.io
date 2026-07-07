@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Not Prosthetics — Elliot Callender</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+<h1>Elliot Callender</h1>
+<nav>
+<a href="../index.html">Home</a>
+<strong>Writing</strong>
+<a href="../timeline.html">Timeline</a>
+</nav>
+</header>
+<hr>
+<main>
+<h2>Not Prosthetics</h2>
+<p>BCI firms have received heavy investment in the past few years. This is great, and I'm proud that humanity is restoring agency to recipients! But existing market pressures aren't going to make superhumans.</p>
+
+<p>Every interesting BCI intelligence enhancement approach I can think of needs extremely high resolution:</p>
+
+<ul><li><a href="https://www.lesswrong.com/posts/uzL9xLj6pwaij5TyK/accelerated-skill-learning-via-dream-engineering-and">Accelerating sleep-based skill acquisition</a><sup><a href="#fn1" id="fnref1">1</a></sup></li><li><a href="https://www.lesswrong.com/posts/ewZXQgzaCvzdSvtWE/biologically-plausible-sgd-is-hard">Increasing effective brain mass / "general compute"</a></li><li><a href="https://www.lesswrong.com/posts/DAFMA6aqDyGNXAaJe/working-memory-expansion">Expanding working memory</a></li><li><a href="https://www.lesswrong.com/s/Wy8smXGZ7PsS9CpgP/p/6ouGcnFSyBjJzEA5b">Neuralese/telepathy</a></li></ul>
+
+<p>Yet every existing major neurotech lab has physiologically and behaviorally narrow targets with minimal bandwidth:</p>
+
+<ul><li><b>Neuralink</b> runs ~1k thread electrodes in motor cortex which decode into a small set of actions (cursor movement, eventually speech decoding / limb control)</li><li><b>Synchron</b>'s stentrode places ~16 channels endovascularly for motor intent in ALS patients; again minimally invasive, sensible for FDA approval</li><li><b>Paradromics</b>' CONNEXUS is ~1.6k channels targeting speech, although they have very interesting tech</li><li><b>Precision Neuroscience</b> uses a surface array at ~4k channels for prosthetics</li><li><b>Blackrock Neurotech</b>'s Utah arrays have 128 channels and are too rigid for long-term insertion</li><li><b>Science Corporation</b> uses similar tech to what I'm proposing but is currently constrained to ~1k channels</li><li><b>Merge Labs</b>' <i>stated goals</i> are closest to mine. Merge, if I'm <a href="https://www.merge.io/blog">reading</a> them right, aims for an interconnect density in the hundreds of millions to billions. Their technology sounds to me <i>at least</i> a decade away with massive AI uplift (or 30 years without uplift)<sup><a href="#fn2" id="fnref2">2</a></sup></li><li><b>Neuropixels Ultra</b> is a research probe meant for non-human animals; it destructively slices tissue to read depth-based signaling. NP Ultra can pull 384 channels out of ~6.1k total, which is less total bandwidth but <a href="https://www.cell.com/neuron/fulltext/S0896-6273(25)00665-8">~20x the density</a> of prosthetic contenders. They don't send signals back to the brain and are thermally limited to pulling from a small subset of their electrodes</li></ul>
+
+<p>So mostly motor and speech regions, with a few thousand connections. That's sufficient for decoding cursor velocity, intended phoneme, visual stimulus class, etc engineered features. These are tasks where a small, well-chosen set of channels in a known-functional region carries enough information that work on the decoder side does the rest. Pushing higher is worse for biocompatibility, R&amp;D cost, and regulatory clearance.</p>
+
+<p>Again, to be clear, I think these labs are doing interesting and important work.</p>
+
+<p>But if you want to talk to the brain like it talks to itself (see <a href="https://en.wikipedia.org/wiki/Bitter_lesson">Bitter Lesson</a>), you need a few hundred million connections. This immediately causes transmission and thermal issues. Whereas Neuralink uses low-power Bluetooth, we need multiple bidirectional fiber optics, an external power supply, and probably an active cooler cycling fluid between the skull and a radiator.</p>
+
+<p>I would be very surprised if the FDA and insurers approved "permanent bundle of cables and pipes exiting patient's head", particularly since "wants to solve AI alignment" is not yet a medical indication<sup><a href="#fn3" id="fnref3">3</a></sup>.</p>
+
+<ol><li id="fn1"><p><a href="https://www.sciencedirect.com/science/article/pii/S1053810020300325">Dream engineering</a> was the most interesting thing I read about in grade school.</p><a href="#fnref1"> ↩</a></li><li id="fn2"><p>Reading individual neurons through skull (or even <a href="https://en.wikipedia.org/wiki/Dura_mater">dura</a>), or inferring similarly useful signals without access to individual neurons, seems extremely difficult. Merge <a href="https://www.merge.io/blog#:~:text=To%20make,possible%2E">claims</a> that they can do something close to this molecularly and/or with ultrasound; but molecules diffuse slowly and in all directions, so I'm unsure how they plan to achieve spatial and temporal precision. Ultrasound may eventually work, but it's unclear to me how to avoid the signal distortion of crossing multiple material boundaries, whether that's a soundwave or something more exotic. Perhaps <a href="https://www.youtube.com/watch?v=SVTPv4sI_Jc">magnetic sensors</a>? I'm all for speculative BCI tech; I just think that non-invasive approaches won't happen before ASI.</p><a href="#fnref2"> ↩</a></li><li id="fn3"><p><i>Maybe</i> one could market for intellectually disabled folks. I still think cable management is a hard no for most would-be patients.</p><a href="#fnref3"> ↩</a></li></ol>
+<div class="prevnext"><a href="bci-cognition-enhancement-is-possible.html">← BCI Cognition Enhancement is Possible</a><a href="just-add-neurons.html">Just Add Neurons →</a></div>
+<footer><a href="index.html">↑ BCI Cognition Enhancement</a></footer>
+</main>
+<script src="../js/footnotes.js" defer></script>
+</body>
+</html>

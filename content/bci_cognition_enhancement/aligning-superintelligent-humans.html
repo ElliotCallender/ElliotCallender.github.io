@@ -1,0 +1,67 @@
+<p><a href="https://www.lesswrong.com/posts/AzRmp7NXY4Ethzt5i/beyond-hardcoded-evolutionary-psychology"><i>Last post</i></a><i> was an example of how intelligence-correlated tools can stabilize reflection. Here I'll discuss how native-cyborgism attenuates the hard parts of getting to a pivotal act.</i></p>
+
+<hr/>
+
+<p>Probable ASI is grown end-to-end and evaluated by much less capable humans. Alignment is hard because we're weaker optimizers than what we're trying to steer:</p>
+
+<ul><li>Gradient descent searches a vastly larger space than humans can conceptualize, so:<ul><li>Internals become <a href="https://www.lesswrong.com/posts/EhAbh2pQoAXkm9yor/circumventing-interpretability-how-to-defeat-mind-readers#:~:text=2%2E3%2E1%2E%20Alien%20representations,-Some">incomprehensible</a>, <a href="https://arxiv.org/abs/2506.01926">particularly</a> if you train for what look like good circuits; I'm going to call this <i>ontological</i> mismatch</li><li>Outputs start exploring human-unwanted parts of the optimization space, call this <i>power</i> mismatch</li></ul></li><li>The ASI itself has plenty of available strategies for power-grabbing</li></ul>
+
+<p>This power asymmetry means, in general, that the processes we're trying to control simply route around our measures. A <a href="https://www.lesswrong.com/posts/HfqbjwpAEGep9mHhc/the-plan-2023-version#1__What_s_Your_Plan_For_AI_Alignment_">mathematically robust</a> specification of properties like corrigibility, if translated to PyTorch code, removes the gaps an ASI would otherwise flow through. I'm glad <a href="https://www.lesswrong.com/posts/w4aeAFzSAguvqA5qu/how-to-go-from-interpretability-to-alignment-just-retarget">some people</a> are working on this, but perhaps there are other approaches.</p>
+
+<p>What if we instead kept the optimizer at a manageable capacity<sup><a href="#fn1" id="fnref1">1</a></sup>?</p>
+
+<h2>Introspection</h2>
+
+<p>Humans, I think, <i>can</i> have much more control over where their values drift as an individual than labs will over future AIs. We can actively guide our internals because they're apparent to us; value stability scales with introspection.</p>
+
+<p>People don't typically <a href="https://www.lesswrong.com/posts/WLJwTJ7uGPA5Qphbp/trying-to-try">try</a> to do this. Most who <i>do </i>try don't have particularly strong models of cognitive neuroscience, and rarer still<sup><a href="#fn2" id="fnref2">2</a></sup> are those who correlate evolutionary psychology (and other relevant sciences) to their introspection.</p>
+
+<p>To rephrase, some form of self-understanding scales with introspection and intelligence, and so boosting <i>both</i> intelligence and introspection would buffer ontological drift (in the precise sense of preventing incomprehensibility) and "optimizer power mismatch" (which in this case is more like adversarial outputs from the BCI).</p>
+
+<details><summary><p>"Rolling your own metaethics"</p></summary><div><p>What's a value? Not necessarily affective response; valence is <i>correlated</i> with but not precisely "value".</p><p>"The simplest description of what you're optimizing for" sucks when "you" aren't well-defined; eg every atom in my body optimizes for stable electron configurations; my neurons often optimize for cortical arousal against my wishes (insomnia); my metacognitive process monitor probably optimizes for sensual and semantic error minimization, but "I" angle for unpredictable situations, etc.</p><p>This is one example of how <a href="https://www.lesswrong.com/posts/fJqP9WcnHXBRBeiBg/meta-questions-about-metaphilosophy">unsolved metaphilosophy</a> makes alignment hard, even when you start with humans.</p><p>Unfortunately, even a <a href="https://www.lesswrong.com/posts/DJRe5obJd7kqCkvRr/don-t-leave-your-fingerprints-on-the-future">long reflection</a> probably suffers this problem class; "human" isn't currently well-defined in this domain, but we <i>must</i> <a href="https://www.lesswrong.com/posts/vzHtHHBJoKATi5SeK/empowerment-corrigibility-etc-are-simple-abstractions-of-a">edit cognitive prerequisites</a> for "values" somewhere during CEV. For example, raising a generation (or CEV'ing a humanlike society) without war will change how they "value" everything culturally and psychologically downstream of experiencing war. Removing whatever neural machinery differentially grows "values" whether exposed to wars is <i>also</i> a cognitive edit.</p><p>So it's probably impossible to keep your hands off the future in a mathematically robust way. A long reflection probably still returns great values with minimal pericultural edits; I think we should aim for this.</p></div></details>
+
+<p>When I say "value stability" here, I mean something like "the propensity to commit a pivotal act which stabilizes a long reflection under minimal cultural edits".</p>
+
+<p>Current population-median humans are bad at qua-value stability (for example, <a href="https://www.lesswrong.com/posts/v8rghtzWCziYuMdJ5/why-does-power-corrupt">when newly powerful</a>). But I don't think most people even <i>try</i> to be temporally coherent, at least beyond satisfying some Duty; nor do they have solid models of how reward actually happens in their brain, which are prerequisite to robust self-alignment tools.</p>
+
+<blockquote><p>I dunno, like, if someone gets clinical depression, they’ll say “I want to enjoy all the things that I used to enjoy”. But they can’t. They don’t know how. It’s probably possible if they find a sufficiently good therapist, but certainly not straightforward.</p></blockquote>
+
+<p>Most clinical depression is probably a neuroplasticity deficiency, i.e. solved by access to neural self-modification<sup><a href="#fn3" id="fnref3">3</a></sup>; but there are other <a href="https://www.lesswrong.com/s/HzcM2dkCq7fwXBej8/p/hE56gYi5d68uux9oM">architectural priors</a>, ones which are more complex and not so steerable via external edits.</p>
+
+<hr/>
+
+<p>Once, in the ancient ages of MTV and arcade games<sup><a href="#fn4" id="fnref4">4</a></sup>, <a href="https://www.sciencedirect.com/science/article/abs/pii/0304395986901557">there was</a> an epileptic patient with a deep-brain stimulating electrode.</p>
+
+<p>She found that the electrode hit an erotic circuit; so she kept pressing the button until she was skipping all obligations to keep hitting her right thalamic nucleus.</p>
+
+<p>Like depression, wireheading is a behavioral attractor.</p>
+
+<p>I expect that most aberrant<sup><a href="#fn5" id="fnref5">5</a></sup> cognitive attractors under self-modification are debilitating; eg sunk costs, narcissism, confirmation bias. The <a href="https://www.lesswrong.com/posts/SA79JMXKWke32A3hG/original-seeing">prior can't update</a> -&gt; you're in a basin. Globally debilitating basins (ones which reduce optimization power in many domains) seem less consequential for alignment.</p>
+
+<p>But there do exist non-crippling, worrisome behavioral attractors. Having less empathy for outgroup members, for example, is genetically (and memetically) coded for in most humans.</p>
+
+<p>While harder, the same tools apply here as irrational basins; see the <a href="https://www.lesswrong.com/posts/AzRmp7NXY4Ethzt5i/beyond-hardcoded-evolutionary-psychology">previous post</a> for examples. Evolutionary psychology more generally has a massive toolset which a smarter augmented group could distill.</p>
+
+<p>As someone's general cognition improves, they get finer felt senses and models supporting self-alignment (neuroscience, social modeling). I'm gonna call this gestalt tooling "introspection".</p>
+
+<p><i>So, "value stability" scales with introspective tooling. What sort of BCI algorithm could drastically boost cognition while maintaining introspection?</i></p>
+
+<p>I don't have a good answer for this in advance of experimental results about how the heck local neuronal learning occurs.</p>
+
+<p>But one constraint which I'll sketch later, in the engineering portion of this sequence, is that, every few layers, the model decodes into biological activations before re-encoding. Inasmuch as humans naturally learn to introspect, intermediate readouts let this continue.<sup><a href="#fn6" id="fnref6">6</a></sup></p>
+
+<p><i>If the digital algo is a grown optimizer and part of a general intelligence, how doesn't it foom? Like, if you're doing agent-y things, then your software will learn agent-y outputs, right? And then you get classic instrumental convergence.</i></p>
+
+<p>Unlike RLAIF, we'd be starting from a baseline where:</p>
+
+<ul><li>The <a href="https://www.lesswrong.com/posts/zuXo9imNKYspu9HGv/a-three-layer-model-of-llm-psychology">underlying optimizer</a> has human-friendly values (see below)</li><li>The human has <i>much better</i> access to their internals than LLMs</li><li>The reward function is whatever-human-brains-do which has already demonstrably created human-friendly people</li></ul>
+
+<p>Unfortunately, there exist unkind people. We can select for people with eg long prosocial careers, high introspection, positive interviews with close friends / relatives, cognitomotor<sup><a href="#fn7" id="fnref7">7</a></sup> symptoms of empathy etc but are still trusting someone to be Good, to stably pursue and execute a minimal pivotal act.</p>
+
+<p>Cohorts could further reduce the risk of a sole human superintelligence going in some weird direction, be that via resonant idiosyncrasies or social starvation.</p>
+
+<p>As for attractors which are harder to predict in advance, those seem nasty, and I don't have any advance-predicted tools. Need <a href="https://www.lesswrong.com/s/evLkoqsbi79AnM5sz/p/pPWiLGsWCtN92vLwu">better models</a>.</p>
+
+<p>If you're interested in gaming/simulating this error class, contact me; it seems high-value not just for superhumans but also for modeling RLAIF-centric takeoff timelines.</p>
+
+<ol><li id="fn1"><p>LLM labs <i>think</i> they're doing some combination of robust specification and par-capabilities with RLAIF and lots of other tools, but this will kill everyone if they reach substantially superhuman; the holes aren't <i>inarguably</i> visible yet, but they can't hold arbitrary pressure. Nor even are such methods robust enough to cleanly execute a pivotal act in the unlikely event corporate leadership avails GPT-moose-8.6-ultra of resources to do so. And that's assuming LLMs, instead of some much more efficient model class.</p><a href="#fnref1"> ↩</a></li><li id="fn2"><p>There are 20,000 or so folks here on LessWrong out of 9,000,000,000. Plausibly many non-LWers train rationality-adjacent skills to moderate effect, including self-alignment.</p><a href="#fnref2"> ↩</a></li><li id="fn3"><p>Higher plasticity alone seems to be similarly as effective as ECT for depression; augmentees would have access to other hyperparameters (E/I balance, gross connectivity, lateral inhibition), though I don't think this specific example matters much for value stability. Nor am I confident I could reduce things which look like ASD/schizophrenia (though those seem to correlate with synaptic <a href="http://dx.doi.org/10.3389/fncel.2018.00470">growth</a> &amp; <a href="http://dx.doi.org/10.3389/fnsyn.2025.1656232">pruning</a> hyperparameters).</p><a href="#fnref3"> ↩</a></li><li id="fn4"><p>And even earlier, <a href="https://en.wikipedia.org/wiki/Brain_stimulation_reward">during the pre-Cambrian</a>!</p><a href="#fnref4"> ↩</a></li><li id="fn5"><p>All grown intelligent circuits are cognitive attractors, so "aberrant" means something more like bad-for-coherence, which needs better agent theory than I can provide.</p><a href="#fnref5"> ↩</a></li><li id="fn6"><p>We could also optimize some statistics of the decode representation to resemble SAEs or similar AI interp tools as an auxiliary method, but I'm more optimistic about biosimilarity than interp crosspollination on the margin.</p><a href="#fnref6"> ↩</a></li><li id="fn7"><p>For example, AIs which use facial micromovements / body language to more accurately classify emotional responses than humans can; current models aren't great at this, see <a href="https://www.sciencedirect.com/science/article/pii/S0262885624000556">here</a>. I imagine better versions are used already by intelligence agencies.</p><a href="#fnref7"> ↩</a></li></ol>

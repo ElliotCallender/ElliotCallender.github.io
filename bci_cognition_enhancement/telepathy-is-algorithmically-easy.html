@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Telepathy Is (Algorithmically) Easy — Elliot Callender</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+<header>
+<h1>Elliot Callender</h1>
+<nav>
+<a href="../index.html">Home</a>
+<strong>Writing</strong>
+<a href="../timeline.html">Timeline</a>
+</nav>
+</header>
+<hr>
+<main>
+<h2>Telepathy Is (Algorithmically) Easy</h2>
+<p><i>Thought-sharing is the easiest approach for intelligence amplification given appropriate hardware. The main risks are psychosis and dissociative symptoms from identity disruption.</i></p>
+
+<p><i>I'm around 30% that an implanted group of 10 would actually manage a pivotal act, conditional on hardware being solved.</i></p>
+
+<p><br/></p>
+
+<p>Speech and text are extremely inefficient. For example, math textbooks are routinely more than one page long.</p>
+
+<p>This sucks! I want the entirety of human hard-science results to pass through my mind at least once. <i>Someone</i> learned each of those concepts, but they can't just copy their Understanding to me.<sup><a href="#fn1" id="fnref1">1</a></sup></p>
+
+<p>Or perhaps they can?</p>
+
+<p>If we can read and write <i>enough neural state</i>, then communication is a unusually friendly target for cognitive augmentation. Unlike most enhancements, it doesn't need (non-hardware) neuroscience breakthroughs in about half of possible worlds from my perspective.</p>
+
+<p>Humans are already exceptionally skilled at communication despite terrible bandwidth. By speaking while learning neuralese, we can use spoken language and feature engineering as training wheels to bootstrap telepathy.</p>
+
+<p>(To be clear, I'm talking about hardware and software to pass carefully-translated brain activity between people. It's not <a href="https://www.lesswrong.com/posts/6i3zToomS86oj9bS6/mysterious-answers-to-mysterious-questions">spooky</a>.)</p>
+
+<p>Groups of experts could then share deep understanding in minutes-to-days; I'd wager that, with help from a mathematician, I could understand most of modern algebraic topology in a week instead of a year.</p>
+
+<hr/>
+
+<p>This could go a few ways. We'll start with the most pessimistic success case, which I estimate is the top ~55% of possibilities. (Most of the bottom ~45%, where we telepathy entirely fails, are worlds where bootstraps don't scale.)</p>
+
+<p>Say that we have <i>absolutely no idea</i> how to implement any algorithms which aren't scientifically replicated as of mid-2026.</p>
+
+<p>Neurotech labs <a href="https://www.lesswrong.com/posts/2XCN7rAdMMMeDJGkG/not-prosthetics">already</a> translate low-dimensional data for speech, movement, and audio-visual stimuli. So we take thousands of these decoders running at much higher resolution across brain surface, and start by training a model on stimuli from a VR headset and haptic suit.</p>
+
+<img alt="Screenshot from 2026-06-15 13-00-24.png" src="https://res.cloudinary.com/lesswrong-2-0/image/upload/v1781542845/lexical_client_uploads/lzc6yqxreapddnhe4jjb.png"/>
+
+<figcaption><p>Left: computational graph for feature-engineered bootstrapping of telepathy model write component. The system learns to convert stimuli into neural activations. Right: same, for reading states.</p></figcaption>
+
+<p><br/></p>
+
+<p>We have a basis. This can decode and re-encode simple stimuli. We now train the model to <a href="https://doi.org/10.1016/j.celrep.2026.117162">predict</a> what text this person will write and speak in a few seconds given their current activations; this takes a good bit longer, probably a few months. If scaling broke, this is where I'd expect it to.</p>
+
+<img alt="image.png" src="https://res.cloudinary.com/lesswrong-2-0/image/upload/v1781543605/lexical_client_uploads/wqqenpso3lqbytibhtak.png"/>
+
+<figcaption><p>Same idea as earlier, but now the model must learn <i>anticipatory</i> signals. Text pulled from <a href="https://en.wikipedia.org/wiki/Intercalation_(chemistry)">Wikipedia</a>. Actual delays probably gradually ramp from 1 second to 10 or more seconds.</p></figcaption>
+
+<p><br/></p>
+
+<p>And now, we connect two people using a shared translator model<sup><a href="#fn2" id="fnref2">2</a></sup>. They've learned explicit "macros" so it's a light application of will to send thoughts to the other person.</p>
+
+<img alt="Screenshot from 2026-06-15 18-08-23.png" src="https://res.cloudinary.com/lesswrong-2-0/image/upload/v1781561326/lexical_client_uploads/cvlc6cvcbgbsxjbcy0br.png"/>
+
+<figcaption><p>A simple intent-to-transmit decoder allows deliberate, controlled communication, though it's still extremely lossy.</p></figcaption>
+
+<p><br/></p>
+
+<p>This goes pretty terribly at first. Very imprecise. We keep the signal gain low to reduce weird effects (particularly psychosis, which I'll get to later).</p>
+
+<p>The pair simply talk about interesting things together. As humans do, they begin to build stronger models of each other; neuralese becomes increasingly useful for refining communication.</p>
+
+<img alt="image.png" src="https://res.cloudinary.com/lesswrong-2-0/image/upload/v1781548697/lexical_client_uploads/uqj89ckgogr1mokphjf6.png"/>
+
+<figcaption><p>The external verbal refinement loop. In this example, the sender (left) is transmitting the molecular structure of <a href="https://www.lesswrong.com/posts/vefsxkGWkEMmDcZ7v/the-effects-of-caffeine-consumption-do-not-decay-with-a-5">paraxanthine</a>, which the receiver (right) interprets as caffeine.</p></figcaption>
+
+<p><br/></p>
+
+<p>After ~4 months of this, the pair now has much better bandwidth than unaided speech. It's more efficient to share learned insights than to learn independently.</p>
+
+<img alt="image.png" src="https://res.cloudinary.com/lesswrong-2-0/image/upload/v1781550749/lexical_client_uploads/oq0ojfl6zsonlst7mbpb.png"/>
+
+<figcaption><p>As earlier, but now the refinement loop has tightened, being mostly nonverbal. "Where am I wrong about this being the chemical I canonically associate with coffee?" -&gt; "This red atom is replaced with a hydrogen."</p></figcaption>
+
+<p><br/></p>
+
+<p>In more extreme hypotheticals (the upper 10% by my estimate), after about a year, they're better thought of as one entity than two. As typical brains split computation between hemispheres, so too the minds fluently delegate fractional thoughts.</p>
+
+<p>Scaling the number of people gives nearly linear returns<sup><a href="#fn3" id="fnref3">3</a></sup>; we'd need router minds, but beyond that, scaling doesn't have a hard limit.</p>
+
+<hr/>
+
+<p>Alright, what if we know the brain's local learning algorithm and can do whatever <a href="https://www.lesswrong.com/s/Wy8smXGZ7PsS9CpgP/p/ewZXQgzaCvzdSvtWE">extra cortical mass</a> would do?</p>
+
+<p>We could then train the translator much more efficiently; after pretraining to convert to a blurry common language, we run the translator at much higher learning rate to reduce local error.</p>
+
+<p>As in, we make the translator convert messages into whatever each mind is asking for.</p>
+
+<p>Thus we needn't wait for the two humans to become fluent in neuralese. The translator can adapt much quicker than human minds. Bottlenecks here are mostly psychological.</p>
+
+<hr/>
+
+<p>In the case where we can dramatically <a href="https://www.lesswrong.com/posts/uzL9xLj6pwaij5TyK/accelerated-skill-learning-via-dream-engineering-and">improve memory consolidation</a>?</p>
+
+<p>Here as well, we can probably accelerate translator convergence. Unlike most cognition, I strongly suspect that cross-human neuralese benefits (accounting for resources used) from <i>strategically written replay code</i>;</p>
+
+<blockquote><p>person Q was thinking P and then said something which resulted in idea K</p></blockquote>
+
+<p>seems like it could be pretty effectively scaffolded with some custom-built tools.</p>
+
+<hr/>
+
+<p>Alright, but beaming stimuli into my mind sounds a lot like hallucinations! I don't have agency over what I'm "thinking".</p>
+
+<p><a href="https://www.lesswrong.com/posts/iLedFvzdhq3kSYPZq/self-control-is-a-neurological-type-error">This is a misnomer</a>; in humanlike intelligences, "control" is the <i>result</i> of lots of local computations with no central deciding entity. Those processes would probably not implode if they merged into one monolithic entity, although "I" would be less well-defined.</p>
+
+<p>But the process which calls itself a me will still be disrupted by this change, and we don't want a crazy superintelligence <a href="https://www.lesswrong.com/posts/3WMscsscLEavkTJXv/s-risks-why-they-are-the-worst-existential-risks-and-how-to"><i>pointed at human values</i></a>.</p>
+
+<p>So, at minimum, each person has control over sending <i>and receiving</i> neuralese.</p>
+
+<p><a href="https://www.lesswrong.com/posts/DAFMA6aqDyGNXAaJe/working-memory-expansion">Frequency-coded working memory</a> gives a good inductive bias for message-passing. "Person X is thinking Y" goes on one channel, where "person X" and "Y" are flexibly-bound preexisting circuits.<sup><a href="#fn4" id="fnref4">4</a></sup></p>
+
+<img alt="image.png" src="https://res.cloudinary.com/lesswrong-2-0/image/upload/v1781560948/lexical_client_uploads/txw2jscokwgfmttxbcq1.png"/>
+
+<figcaption><p>Working memory might be very similar to FM radio, in which case members of a small group could "tune in" to others' broadcast channels.</p></figcaption>
+
+<p><br/></p>
+
+<p>We'd probably also include a loss term in the translator for raw sensory and motor signals, since these cause the worst subjective loss-of-agency feelings (sensory / movement data is mostly irrelevant to communication anyway).</p>
+
+<p>I'm around 75% confident that these combined approaches would prevent first-order hallucinatory and psychotic effects, and around 80% conditional on non-acute psychosis that we'd avoid second-order (learned, more chronic) psychosis.</p>
+
+<hr/>
+
+<p>To restate:</p>
+
+<ol><li>Bootstrap the decoder using cheap data like stimulation and writing/speech so that augmentees can communicate anything useful at all; we want it to at least be coherent signals they're sending.</li><li>Augmentees talk, lots, for a long time, while simultaneously trying to send their thoughts through the neuralese channel.<br/>Humans are pretty damn good at communication for having such trash bandwidth; so the augmentees get better at communicating <i>much faster</i> than we'd expect from performance on other tasks. There's a tight feedback loop of "what's the person actually saying?" which accelerates this much better than it would if they just worked on challenges together without speaking.</li><li>As this loop closes, it starts to close <i>faster</i> since they're now <i>thinking</i> more than speaking at each other; feedback loops are nearly thought-speed.</li></ol>
+
+<p>Out of the four approaches I've covered, I'm most confident that neuralese/telepathy is tractable <i>with sufficient hardware</i>.</p>
+
+<p>Which brings us to hardware!</p>
+
+<ol><li id="fn1"><p>This is one reason why <a href="https://slatestarcodex.com/2015/12/27/things-that-are-not-superintelligences/">bureaucracies aren't even vaguely superintelligent</a> entities, despite often being composed of many individually very smart people.</p><a href="#fnref1"> ↩</a></li><li id="fn2"><p>This architecture (<a href="https://openai.com/index/clip/">CLIP</a>) is used in multimodal embedding for some tasks like text-conditioned image diffusion and AI-guided molecular search.</p><a href="#fnref2"> ↩</a></li><li id="fn3"><p>By the time linearity is saturated, the group is decidedly a superintelligence.</p><a href="#fnref3"> ↩</a></li><li id="fn4"><p>Also note that, at group sizes where routing becomes a bottleneck, working memory items are probably the most interesting things to broadcast; they've been selected by the augmentee's cognition to be most relevant to whatever's happening.</p><a href="#fnref4"> ↩</a></li></ol>
+<div class="prevnext"><a href="accelerated-skill-learning-via-dream-engineering-and.html">← Accelerated Skill Learning via Dream Engineering and Biofeedback</a><a href="long-term-implants-need-to-be-stretchy.html">Long-Term Implants Need To Be Stretchy →</a></div>
+<footer><a href="index.html">↑ BCI Cognition Enhancement</a></footer>
+</main>
+<script src="../js/footnotes.js" defer></script>
+</body>
+</html>
