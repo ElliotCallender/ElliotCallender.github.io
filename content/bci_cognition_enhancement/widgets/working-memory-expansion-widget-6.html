@@ -1,0 +1,2082 @@
+
+
+
+
+
+
+  <meta charset="utf-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Phase-Coded Control Decoder</title>
+
+  <style>
+
+    :root {
+
+      --bg: #fbfbfd;
+
+      --panel: #ffffff;
+
+      --text: #1f2430;
+
+      --muted: #6b7280;
+
+      --border: #d9dee7;
+
+      --grid: #e9edf4;
+
+      --axis: #b8c2d1;
+
+      --receiver: #a855f7;
+
+      --sum: #111827;
+
+      --running: #2563eb;
+
+      --dog: #24a148;
+
+      --sunlight: #f59e0b;
+
+      --carrier-a: #64748b;
+
+      --carrier-b: #7c3aed;
+
+      --carrier-c: #db2777;
+
+      --good: #1d8348;
+
+      --warn: #b26a00;
+
+    }
+
+
+
+    html, body {
+
+      margin: 0;
+
+      background: var(--bg);
+
+      color: var(--text);
+
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+    }
+
+
+
+    .wrap {
+
+      width: 100%;
+
+      max-width: 1220px;
+
+      margin: 0 auto;
+
+      padding: 16px;
+
+      box-sizing: border-box;
+
+    }
+
+
+
+    .card {
+
+      background: var(--panel);
+
+      border: 1px solid var(--border);
+
+      border-radius: 18px;
+
+      box-shadow: 0 8px 28px rgba(22, 30, 50, 0.08);
+
+      overflow: hidden;
+
+    }
+
+
+
+    .controls {
+
+      display: grid;
+
+      grid-template-columns: repeat(2, minmax(180px, 1fr));
+
+      gap: 14px;
+
+      padding: 14px 16px;
+
+      border-bottom: 1px solid var(--border);
+
+      align-items: end;
+
+    }
+
+
+
+    .source-controls {
+
+      display: grid;
+
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
+
+      gap: 14px;
+
+      padding: 14px 16px;
+
+      border-bottom: 1px solid var(--border);
+
+      background: #fcfdff;
+
+    }
+
+
+
+    .source-card {
+
+      border: 1px solid var(--border);
+
+      border-radius: 14px;
+
+      padding: 11px 12px 12px;
+
+      background: white;
+
+    }
+
+
+
+    .source-title {
+
+      display: flex;
+
+      align-items: center;
+
+      gap: 8px;
+
+      margin-bottom: 10px;
+
+      font-size: 14px;
+
+      font-weight: 800;
+
+    }
+
+
+
+    .mini-grid {
+
+      display: grid;
+
+      grid-template-columns: 1fr 1fr;
+
+      gap: 10px;
+
+      align-items: end;
+
+    }
+
+
+
+    .control { min-width: 0; }
+
+
+
+    .control label {
+
+      display: flex;
+
+      justify-content: space-between;
+
+      gap: 8px;
+
+      font-size: 13px;
+
+      margin-bottom: 6px;
+
+      color: var(--text);
+
+      font-weight: 650;
+
+    }
+
+
+
+    .mini-grid .control label {
+
+      font-size: 12px;
+
+      margin-bottom: 5px;
+
+    }
+
+
+
+    .value {
+
+      color: var(--muted);
+
+      font-weight: 500;
+
+      font-variant-numeric: tabular-nums;
+
+      white-space: nowrap;
+
+    }
+
+
+
+    input[type="range"], select {
+
+      width: 100%;
+
+    }
+
+
+
+    input[type="range"] {
+
+      accent-color: var(--receiver);
+
+    }
+
+
+
+    #runningFreq, #runningPhase {
+
+      accent-color: var(--running);
+
+    }
+
+
+
+    #dogFreq, #dogPhase {
+
+      accent-color: var(--dog);
+
+    }
+
+
+
+    #sunlightFreq, #sunlightPhase {
+
+      accent-color: var(--sunlight);
+
+    }
+
+
+
+    select {
+
+      box-sizing: border-box;
+
+      border: 1px solid var(--border);
+
+      border-radius: 9px;
+
+      padding: 6px 8px;
+
+      background: white;
+
+      color: var(--text);
+
+      font: 600 13px system-ui, sans-serif;
+
+    }
+
+
+
+    .dot {
+
+      width: 11px;
+
+      height: 11px;
+
+      border-radius: 50%;
+
+      display: inline-block;
+
+    }
+
+
+
+    .canvas-wrap {
+
+      padding: 10px 14px 6px;
+
+    }
+
+
+
+    canvas {
+
+      width: 100%;
+
+      height: auto;
+
+      display: block;
+
+      border-radius: 14px;
+
+      background: #ffffff;
+
+    }
+
+
+
+    .decoder {
+
+      margin: 0 14px 14px;
+
+      border: 1px solid var(--border);
+
+      border-radius: 14px;
+
+      padding: 14px 16px;
+
+      background: #fff;
+
+    }
+
+
+
+    .decoder h3 {
+
+      margin: 0 0 6px;
+
+      font-size: 13px;
+
+      letter-spacing: 0.03em;
+
+      text-transform: uppercase;
+
+      color: var(--muted);
+
+    }
+
+
+
+    .decoder-main {
+
+      font-size: 23px;
+
+      line-height: 1.25;
+
+      font-weight: 800;
+
+      color: var(--text);
+
+      margin-bottom: 8px;
+
+    }
+
+
+
+    .decoder-meta, .decoder-ladder, .decoder-sources {
+
+      font-size: 13px;
+
+      line-height: 1.45;
+
+      color: var(--text);
+
+      margin-top: 8px;
+
+    }
+
+
+
+    .decoder-meta span, .chip {
+
+      display: inline-block;
+
+      margin: 4px 8px 0 0;
+
+      padding: 4px 8px;
+
+      border-radius: 999px;
+
+      background: #f4f7fb;
+
+      border: 1px solid var(--border);
+
+      font-weight: 650;
+
+    }
+
+
+
+    .decoder-ladder div,
+
+    .decoder-sources div {
+
+      margin-top: 4px;
+
+    }
+
+
+
+    .legend {
+
+      display: flex;
+
+      flex-wrap: wrap;
+
+      gap: 16px;
+
+      padding: 0 16px 16px 16px;
+
+      font-size: 13px;
+
+      color: var(--muted);
+
+    }
+
+
+
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+
+    .swatch { width: 22px; height: 4px; border-radius: 999px; background: #000; }
+
+
+
+    @media (max-width: 1050px) {
+
+      .controls, .source-controls { grid-template-columns: 1fr; }
+
+      .mini-grid { grid-template-columns: 1fr; }
+
+    }
+
+  </style>
+
+
+
+
+
+  <div class="wrap">
+
+    <div class="card">
+
+      <div class="controls">
+
+        <div class="control">
+
+          <label><span>Decode frequency</span><span class="value" id="receiverFreqVal">31 Hz</span></label>
+
+          <input id="receiverFreq" type="range" min="25" max="40" step="0.1" value="31">
+
+        </div>
+
+        <div class="control">
+
+          <label><span>EMA beta</span><span class="value" id="emaBetaVal">β=0.900</span></label>
+
+          <input id="emaBeta" type="range" min="0.500" max="0.985" step="0.001" value="0.900">
+
+        </div>
+
+      </div>
+
+
+
+      <div class="source-controls">
+
+        <div class="source-card">
+
+          <div class="source-title"><span class="dot" style="background: var(--running)"></span><span>Running / proprioception</span></div>
+
+          <div class="mini-grid">
+
+            <div class="control">
+
+              <label><span>Frequency</span><span class="value" id="runningFreqVal">29 Hz</span></label>
+
+              <input id="runningFreq" type="range" min="25" max="40" step="0.1" value="29">
+
+            </div>
+
+            <div class="control">
+
+              <label><span>Phase</span><span class="value" id="runningPhaseVal">40°</span></label>
+
+              <input id="runningPhase" type="range" min="0" max="360" step="1" value="40">
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="source-card">
+
+          <div class="source-title"><span class="dot" style="background: var(--dog)"></span><span>Dog visual concept</span></div>
+
+          <div class="mini-grid">
+
+            <div class="control">
+
+              <label><span>Frequency</span><span class="value" id="dogFreqVal">33 Hz</span></label>
+
+              <input id="dogFreq" type="range" min="25" max="40" step="0.1" value="33">
+
+            </div>
+
+            <div class="control">
+
+              <label><span>Phase</span><span class="value" id="dogPhaseVal">180°</span></label>
+
+              <input id="dogPhase" type="range" min="0" max="360" step="1" value="180">
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="source-card">
+
+          <div class="source-title"><span class="dot" style="background: var(--sunlight)"></span><span>Sunlight through trees</span></div>
+
+          <div class="mini-grid">
+
+            <div class="control">
+
+              <label><span>Frequency</span><span class="value" id="sunlightFreqVal">37 Hz</span></label>
+
+              <input id="sunlightFreq" type="range" min="25" max="40" step="0.1" value="37">
+
+            </div>
+
+            <div class="control">
+
+              <label><span>Phase</span><span class="value" id="sunlightPhaseVal">300°</span></label>
+
+              <input id="sunlightPhase" type="range" min="0" max="360" step="1" value="300">
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="canvas-wrap">
+
+        <canvas id="plot" width="1500" height="980"></canvas>
+
+      </div>
+
+
+
+      <div class="decoder" id="decoderPanel">
+
+        <h3>text decoder</h3>
+
+        <div class="decoder-main" id="decodePhrase">—</div>
+
+        <div class="decoder-meta" id="decodeMeta"></div>
+
+        <div class="decoder-ladder" id="decodeLadder"></div>
+
+        <div class="decoder-sources" id="decodeSources"></div>
+
+      </div>
+
+
+
+      <div class="legend">
+
+        <div class="legend-item"><span class="swatch" style="background: var(--running)"></span><span>Running source waveform</span></div>
+
+        <div class="legend-item"><span class="swatch" style="background: var(--dog)"></span><span>Dog source waveform</span></div>
+
+        <div class="legend-item"><span class="swatch" style="background: var(--sunlight)"></span><span>Sunlight source waveform</span></div>
+
+        <div class="legend-item"><span class="swatch" style="background: var(--sum)"></span><span>Dashed sum / bound phase code</span></div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <script>
+
+    const canvas = document.getElementById("plot");
+
+    const ctx = canvas.getContext("2d");
+
+
+
+    const receiverFreq = document.getElementById("receiverFreq");
+
+    const receiverFreqVal = document.getElementById("receiverFreqVal");
+
+    const emaBeta = document.getElementById("emaBeta");
+
+    const emaBetaVal = document.getElementById("emaBetaVal");
+
+    const COMPOSITE_GAIN = 0.5;
+
+    const SOURCE_WEIGHT = 1.0;
+
+
+
+
+
+    const decodePhrase = document.getElementById("decodePhrase");
+
+    const decodeMeta = document.getElementById("decodeMeta");
+
+    const decodeLadder = document.getElementById("decodeLadder");
+
+    const decodeSources = document.getElementById("decodeSources");
+
+
+
+    const sources = [
+
+      {
+
+        key: "run",
+
+        label: "Running",
+
+        longLabel: "running / proprioception",
+
+        colorVar: "--running",
+
+        freq: document.getElementById("runningFreq"),
+
+        freqVal: document.getElementById("runningFreqVal"),
+
+        phase: document.getElementById("runningPhase"),
+
+        phaseVal: document.getElementById("runningPhaseVal")
+
+      },
+
+      {
+
+        key: "dog",
+
+        label: "Dog",
+
+        longLabel: "dog visual concept",
+
+        colorVar: "--dog",
+
+        freq: document.getElementById("dogFreq"),
+
+        freqVal: document.getElementById("dogFreqVal"),
+
+        phase: document.getElementById("dogPhase"),
+
+        phaseVal: document.getElementById("dogPhaseVal")
+
+      },
+
+      {
+
+        key: "sun",
+
+        label: "Sunlight",
+
+        longLabel: "sunlight through trees",
+
+        colorVar: "--sunlight",
+
+        freq: document.getElementById("sunlightFreq"),
+
+        freqVal: document.getElementById("sunlightFreqVal"),
+
+        phase: document.getElementById("sunlightPhase"),
+
+        phaseVal: document.getElementById("sunlightPhaseVal")
+
+      }
+
+    ];
+
+
+
+    const DPR = Math.max(1, window.devicePixelRatio || 1);
+
+    const MIN_DISPLAY_TURNS = 1.5;
+
+    const MAX_DISPLAY_TURNS = 80;
+
+    const SAMPLES_PER_TURN = 260;
+
+    const BIN_COUNT = 180;
+
+    const TAU = Math.PI * 2;
+
+
+
+    const ACTIVE_THRESHOLD = 0.15;
+
+    const HIGH_AMPLITUDE_THRESHOLD = 0.28;
+
+    const LOW_AMPLITUDE_THRESHOLD = 0.10;
+
+
+
+    const EXACT_TRIPLE_PHRASES = {
+
+      "dog-sun-run": "sun in eyes partially obscures vision of a running dog",
+
+      "sun-dog-run": "energetic dog is lit by sunbeam",
+
+      "dog-run-sun": "sensation of running (in first-person), with dog at side",
+
+      "sun-run-dog": "sensation of running in heat (first-person), with dog ahead",
+
+      "run-dog-sun": "dog absolutely sprinting from shade to a brighter place",
+
+      "run-sun-dog": "running through a very bright sandy field to catch up with dog"
+
+    };
+
+
+
+    const PAIR_PHRASES = {
+
+      "dog-run": "running with dog",
+
+      "run-dog": "running with dog",
+
+      "run-sun": "running through a bright sandy field, sun obscuring vision",
+
+      "sun-run": "running through a bright sandy field, sun obscuring vision",
+
+      "sun-dog": "a bright dog panting in the sun",
+
+      "dog-sun": "a bright dog panting in the sun"
+
+    };
+
+
+
+    const SINGLE_PHRASES = {
+
+      run: "the sensation of running",
+
+      dog: "a dog impression",
+
+      sun: "sunlight glare through trees"
+
+    };
+
+
+
+    function cssVar(name) {
+
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+    }
+
+    function toRad(deg) { return deg * Math.PI / 180; }
+
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    function waveName(i) { return ["A", "B", "C"][i] || "A"; }
+
+    function mean(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0; }
+
+    function phaseWrap(rad) { return ((rad % TAU) + TAU) % TAU; }
+
+    function shortestAngleDeg(a, b) {
+
+      const d = Math.abs(a - b) % 360;
+
+      return Math.min(d, 360 - d);
+
+    }
+
+    function circularSeparationDeg(a, b) {
+
+      return shortestAngleDeg(a, b);
+
+    }
+
+
+
+    function resizeCanvas() {
+
+      const displayWidth = canvas.clientWidth;
+
+      const displayHeight = Math.round(displayWidth * 0.66);
+
+      canvas.style.height = displayHeight + "px";
+
+      canvas.width = Math.round(displayWidth * DPR);
+
+      canvas.height = Math.round(displayHeight * DPR);
+
+      draw();
+
+    }
+
+
+
+    function drawText(text, x, y, opts = {}) {
+
+      ctx.fillStyle = opts.color || cssVar("--text");
+
+      ctx.font = `${opts.weight || 500} ${opts.size || 12}px system-ui, sans-serif`;
+
+      ctx.textAlign = opts.align || "left";
+
+      ctx.textBaseline = opts.baseline || "alphabetic";
+
+      ctx.fillText(text, x, y);
+
+    }
+
+
+
+    function drawGrid(plot, horizontalCount = 4, verticalCount = 12) {
+
+      ctx.lineWidth = 1 * DPR;
+
+      ctx.strokeStyle = cssVar("--grid");
+
+      ctx.beginPath();
+
+      for (let i = 0; i <= verticalCount; i++) {
+
+        const x = plot.left + (i / verticalCount) * plot.width;
+
+        ctx.moveTo(x, plot.top);
+
+        ctx.lineTo(x, plot.top + plot.height);
+
+      }
+
+      for (let i = 0; i <= horizontalCount; i++) {
+
+        const y = plot.top + (i / horizontalCount) * plot.height;
+
+        ctx.moveTo(plot.left, y);
+
+        ctx.lineTo(plot.left + plot.width, y);
+
+      }
+
+      ctx.stroke();
+
+    }
+
+
+
+    function drawAxes(plot, zeroY) {
+
+      ctx.strokeStyle = cssVar("--axis");
+
+      ctx.lineWidth = 1.5 * DPR;
+
+      ctx.beginPath();
+
+      ctx.moveTo(plot.left, zeroY);
+
+      ctx.lineTo(plot.left + plot.width, zeroY);
+
+      ctx.moveTo(plot.left, plot.top);
+
+      ctx.lineTo(plot.left, plot.top + plot.height);
+
+      ctx.stroke();
+
+    }
+
+
+
+    function smoothBins(raw) {
+
+      return raw.map((_, i) => {
+
+        const prev2 = raw[(i - 2 + BIN_COUNT) % BIN_COUNT];
+
+        const prev = raw[(i - 1 + BIN_COUNT) % BIN_COUNT];
+
+        const curr = raw[i];
+
+        const next = raw[(i + 1) % BIN_COUNT];
+
+        const next2 = raw[(i + 2) % BIN_COUNT];
+
+        return prev2 * 0.06 + prev * 0.18 + curr * 0.52 + next * 0.18 + next2 * 0.06;
+
+      });
+
+    }
+
+
+
+    function circularSmooth(values, radiusBins = 6, passes = 2) {
+
+      let current = values.slice();
+
+      for (let pass = 0; pass < passes; pass++) {
+
+        const next = new Array(values.length).fill(0);
+
+        for (let i = 0; i < values.length; i++) {
+
+          let weighted = 0;
+
+          let totalWeight = 0;
+
+          for (let d = -radiusBins; d <= radiusBins; d++) {
+
+            const idx = (i + d + values.length) % values.length;
+
+            const w = radiusBins + 1 - Math.abs(d);
+
+            weighted += current[idx] * w;
+
+            totalWeight += w;
+
+          }
+
+          next[i] = weighted / totalWeight;
+
+        }
+
+        current = next;
+
+      }
+
+      return current;
+
+    }
+
+
+
+    function circularWindowMin(values, center, radiusBins) {
+
+      let m = Infinity;
+
+      for (let d = -radiusBins; d <= radiusBins; d++) {
+
+        if (d === 0) continue;
+
+        const idx = (center + d + values.length * 10) % values.length;
+
+        m = Math.min(m, values[idx]);
+
+      }
+
+      return m;
+
+    }
+
+
+
+    function refinePeakIndex(values, approxIndex, radiusBins = 5) {
+
+      let best = approxIndex;
+
+      let bestValue = values[approxIndex];
+
+      for (let d = -radiusBins; d <= radiusBins; d++) {
+
+        const idx = (approxIndex + d + values.length * 10) % values.length;
+
+        if (values[idx] > bestValue) {
+
+          best = idx;
+
+          bestValue = values[idx];
+
+        }
+
+      }
+
+      return best;
+
+    }
+
+
+
+    function detectCircularPeaks(values) {
+
+      const detectTrace = circularSmooth(values, 6, 3);
+
+      const candidates = [];
+
+      for (let i = 0; i < values.length; i++) {
+
+        const prev = detectTrace[(i - 1 + values.length) % values.length];
+
+        const curr = detectTrace[i];
+
+        const next = detectTrace[(i + 1) % values.length];
+
+        if (!(curr >= prev && curr > next)) continue;
+
+        const localMin = circularWindowMin(detectTrace, i, 12);
+
+        const prominence = curr - localMin;
+
+        if (curr < 0.055 || prominence < 0.030) continue;
+
+        candidates.push({ approxIndex: i, score: curr + 0.8 * prominence, detectValue: curr, prominence });
+
+      }
+
+
+
+      candidates.sort((a, b) => b.score - a.score);
+
+      const selected = [];
+
+      const minSepBins = 18;
+
+      candidates.forEach(c => {
+
+        if (selected.every(s => Math.min(Math.abs(c.approxIndex - s.approxIndex), values.length - Math.abs(c.approxIndex - s.approxIndex)) >= minSepBins)) {
+
+          selected.push(c);
+
+        }
+
+      });
+
+
+
+      if (!selected.length) {
+
+        let best = 0;
+
+        for (let i = 1; i < values.length; i++) if (values[i] > values[best]) best = i;
+
+        selected.push({ approxIndex: best, score: values[best], detectValue: values[best], prominence: values[best] });
+
+      }
+
+
+
+      return selected.slice(0, 3).map(c => {
+
+        const idx = refinePeakIndex(values, c.approxIndex, 5);
+
+        return {
+
+          index: idx,
+
+          phaseDeg: idx / BIN_COUNT * 360,
+
+          value: values[idx],
+
+          prominence: c.prominence
+
+        };
+
+      }).sort((a, b) => b.value - a.value);
+
+    }
+
+
+
+    function phaseEmaForSource({ fCarrier, phaseRad, fReceiver, beta, renderedTurns, samples, weight }) {
+
+      const weightedBins = new Array(BIN_COUNT).fill(0);
+
+      const weightBins = new Array(BIN_COUNT).fill(0);
+
+      const carrierAmps = new Array(samples);
+
+      const receiverAngles = new Array(samples);
+
+      const relativeWeights = new Array(samples);
+
+
+
+      for (let i = 0; i < samples; i++) {
+
+        const u = i / (samples - 1);
+
+        const ageTurns = renderedTurns * (1 - u);
+
+        const t = -ageTurns / fReceiver;
+
+
+
+        const carrierAmp = weight * Math.sin(TAU * fCarrier * t + phaseRad);
+
+        const receiverAngle = TAU * fReceiver * t;
+
+        const wrappedAngle = phaseWrap(receiverAngle);
+
+
+
+        const relativeWeight = Math.pow(beta, ageTurns);
+
+        const emaWeight = (1 - beta) * relativeWeight;
+
+        const bin = Math.min(BIN_COUNT - 1, Math.floor((wrappedAngle / TAU) * BIN_COUNT));
+
+
+
+        carrierAmps[i] = carrierAmp;
+
+        receiverAngles[i] = wrappedAngle;
+
+        relativeWeights[i] = relativeWeight;
+
+
+
+        weightedBins[bin] += carrierAmp * emaWeight;
+
+        weightBins[bin] += emaWeight;
+
+      }
+
+
+
+      const averaged = weightedBins.map((v, i) => weightBins[i] > 0 ? v / weightBins[i] : 0);
+
+      const smoothed = smoothBins(averaged);
+
+      const power = smoothed.reduce((acc, v) => acc + Math.abs(v), 0) / smoothed.length;
+
+      const peaks = detectCircularPeaks(smoothed);
+
+      const primaryPeak = peaks[0] || { phaseDeg: 0, value: 0, prominence: 0, index: 0 };
+
+      return { smoothed, power, carrierAmps, receiverAngles, relativeWeights, peaks, primaryPeak };
+
+    }
+
+
+
+    function drawWoundSource(circle, result, color, label, meta) {
+
+      const cx = circle.cx, cy = circle.cy, baseR = circle.r;
+
+      const wiggleR = baseR * 0.20;
+
+
+
+      ctx.strokeStyle = cssVar("--grid");
+
+      ctx.lineWidth = 2 * DPR;
+
+      ctx.beginPath();
+
+      ctx.arc(cx, cy, baseR, 0, TAU);
+
+      ctx.stroke();
+
+
+
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.16)";
+
+      ctx.lineWidth = 1 * DPR;
+
+      ctx.beginPath();
+
+      for (let k = 0; k < 18; k++) {
+
+        const th = (k / 18) * TAU;
+
+        ctx.moveTo(cx, cy);
+
+        ctx.lineTo(cx + Math.cos(th) * baseR, cy + Math.sin(th) * baseR);
+
+      }
+
+      ctx.stroke();
+
+
+
+      ctx.strokeStyle = cssVar("--receiver");
+
+      ctx.lineWidth = 2 * DPR;
+
+      ctx.beginPath();
+
+      ctx.moveTo(cx, cy);
+
+      ctx.lineTo(cx + baseR * 1.12, cy);
+
+      ctx.stroke();
+
+
+
+      ctx.lineCap = "round";
+
+      ctx.lineJoin = "round";
+
+      ctx.lineWidth = 2.6 * DPR;
+
+      for (let i = 0; i < result.carrierAmps.length - 1; i++) {
+
+        const relWeight = (result.relativeWeights[i] + result.relativeWeights[i + 1]) * 0.5;
+
+        ctx.globalAlpha = 0.025 + 0.90 * Math.pow(clamp(relWeight, 0, 1), 2.35);
+
+        ctx.strokeStyle = color;
+
+        const a0 = result.carrierAmps[i];
+
+        const a1 = result.carrierAmps[i + 1];
+
+        const th0 = result.receiverAngles[i];
+
+        const th1 = result.receiverAngles[i + 1];
+
+        const r0 = baseR + a0 * wiggleR;
+
+        const r1 = baseR + a1 * wiggleR;
+
+        ctx.beginPath();
+
+        ctx.moveTo(cx + Math.cos(th0) * r0, cy + Math.sin(th0) * r0);
+
+        ctx.lineTo(cx + Math.cos(th1) * r1, cy + Math.sin(th1) * r1);
+
+        ctx.stroke();
+
+      }
+
+      ctx.globalAlpha = 1;
+
+
+
+      const peakAngle = result.primaryPeak.phaseDeg * Math.PI / 180;
+
+      ctx.fillStyle = color;
+
+      ctx.beginPath();
+
+      ctx.arc(cx + Math.cos(peakAngle) * (baseR * 0.86), cy + Math.sin(peakAngle) * (baseR * 0.86), 5.5 * DPR, 0, TAU);
+
+      ctx.fill();
+
+
+
+      ctx.fillStyle = cssVar("--receiver");
+
+      ctx.beginPath();
+
+      ctx.arc(cx, cy, 4.5 * DPR, 0, TAU);
+
+      ctx.fill();
+
+
+
+      drawText(label, cx, cy - baseR - 15 * DPR, { size: 12 * DPR, weight: 800, align: "center", color });
+
+      drawText(meta, cx, cy + baseR + 18 * DPR, { size: 10.5 * DPR, weight: 600, align: "center", color: cssVar("--muted") });
+
+    }
+
+
+
+    function drawPeakMarkers(plot, peaks, color, toX, toY, labelPrefix) {
+
+      peaks.slice(0, 2).forEach((peak, n) => {
+
+        const x = toX(peak.index);
+
+        const y = toY(peak.value);
+
+        ctx.globalAlpha = 0.30;
+
+        ctx.strokeStyle = color;
+
+        ctx.lineWidth = 1.1 * DPR;
+
+        ctx.setLineDash([3 * DPR, 5 * DPR]);
+
+        ctx.beginPath();
+
+        ctx.moveTo(x, plot.top);
+
+        ctx.lineTo(x, plot.top + plot.height);
+
+        ctx.stroke();
+
+        ctx.setLineDash([]);
+
+        ctx.globalAlpha = 1;
+
+
+
+        ctx.fillStyle = "#ffffff";
+
+        ctx.strokeStyle = color;
+
+        ctx.lineWidth = 2.4 * DPR;
+
+        ctx.beginPath();
+
+        ctx.arc(x, y, 5.2 * DPR, 0, TAU);
+
+        ctx.fill();
+
+        ctx.stroke();
+
+
+
+        drawText(`${labelPrefix}${n + 1}`, x, y - 9 * DPR, {
+
+          size: 9.5 * DPR,
+
+          weight: 850,
+
+          color,
+
+          align: "center"
+
+        });
+
+      });
+
+    }
+
+
+
+    function formatPeaks(peaks) {
+
+      if (!peaks.length) return "—";
+
+      return peaks.slice(0, 2).map(p => `${Math.round(p.phaseDeg)}°/${p.value.toFixed(2)}`).join(" · ");
+
+    }
+
+
+
+    function drawDecodedPeakReadout(plot, sourceResults, sourceSpecs) {
+
+      const boxTop = plot.top + plot.height + 30 * DPR;
+
+      const rowH = 18 * DPR;
+
+      drawText("Decoded phase peaks = broad circular maxima of each unwound source waveform", plot.left, boxTop, {
+
+        size: 11.5 * DPR,
+
+        weight: 800,
+
+        color: cssVar("--muted")
+
+      });
+
+
+
+      sourceResults.forEach((result, i) => {
+
+        const color = cssVar(sourceSpecs[i].colorVar);
+
+        const y = boxTop + (i + 1) * rowH;
+
+        ctx.fillStyle = color;
+
+        ctx.beginPath();
+
+        ctx.arc(plot.left + 5 * DPR, y - 3 * DPR, 4 * DPR, 0, TAU);
+
+        ctx.fill();
+
+        drawText(`${sourceSpecs[i].label}: ${formatPeaks(result.peaks)}`, plot.left + 16 * DPR, y, {
+
+          size: 11 * DPR,
+
+          weight: 650,
+
+          color: cssVar("--text")
+
+        });
+
+      });
+
+    }
+
+
+
+    function drawFlatDecodedPanel(plot, sourceResults, sourceSpecs, sumGainValue) {
+
+      const zeroY = plot.top + plot.height / 2;
+
+      const amp = plot.height * 0.36;
+
+      const toX = i => plot.left + (i / (BIN_COUNT - 1)) * plot.width;
+
+      const toY = v => zeroY - clamp(v, -1.35, 1.35) * amp;
+
+
+
+      drawGrid(plot, 4, 12);
+
+      drawAxes(plot, zeroY);
+
+
+
+      sourceResults.forEach((result, idx) => {
+
+        const color = cssVar(sourceSpecs[idx].colorVar);
+
+        ctx.strokeStyle = color;
+
+        ctx.lineWidth = 3.1 * DPR;
+
+        ctx.lineJoin = "round";
+
+        ctx.lineCap = "round";
+
+        ctx.beginPath();
+
+        result.smoothed.forEach((v, i) => {
+
+          const x = toX(i);
+
+          const y = toY(v);
+
+          if (i === 0) ctx.moveTo(x, y);
+
+          else ctx.lineTo(x, y);
+
+        });
+
+        ctx.stroke();
+
+      });
+
+
+
+      sourceResults.forEach((result, idx) => {
+
+        drawPeakMarkers(plot, result.peaks, cssVar(sourceSpecs[idx].colorVar), toX, toY, sourceSpecs[idx].label.slice(0, 1));
+
+      });
+
+
+
+      const composite = new Array(BIN_COUNT).fill(0).map((_, i) =>
+
+        sumGainValue * sourceResults.reduce((acc, r) => acc + r.smoothed[i], 0)
+
+      );
+
+      ctx.strokeStyle = cssVar("--sum");
+
+      ctx.lineWidth = 2.6 * DPR;
+
+      ctx.setLineDash([8 * DPR, 6 * DPR]);
+
+      ctx.beginPath();
+
+      composite.forEach((v, i) => {
+
+        const x = toX(i);
+
+        const y = toY(v);
+
+        if (i === 0) ctx.moveTo(x, y);
+
+        else ctx.lineTo(x, y);
+
+      });
+
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+
+
+
+      drawText("Unwound decode channel: superimposed source waveforms + phase-peak extraction", plot.left, plot.top - 12 * DPR, {
+
+        size: 13 * DPR,
+
+        weight: 800,
+
+        color: cssVar("--muted")
+
+      });
+
+      drawText("0°", plot.left, plot.top + plot.height + 18 * DPR, { size: 10.5 * DPR, color: cssVar("--muted"), align: "left" });
+
+      drawText("180°", plot.left + plot.width / 2, plot.top + plot.height + 18 * DPR, { size: 10.5 * DPR, color: cssVar("--muted"), align: "center" });
+
+      drawText("360°", plot.left + plot.width, plot.top + plot.height + 18 * DPR, { size: 10.5 * DPR, color: cssVar("--muted"), align: "right" });
+
+      drawText("+", plot.left - 10 * DPR, toY(1), { size: 11 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+
+      drawText("0", plot.left - 10 * DPR, zeroY, { size: 11 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+
+      drawText("−", plot.left - 10 * DPR, toY(-1), { size: 11 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+
+    }
+
+
+
+    function drawCarrierReference(plot, freqs, fReceiver) {
+
+      const zeroY = plot.top + plot.height / 2;
+
+      const amp = plot.height * 0.25;
+
+      drawGrid(plot, 2, 12);
+
+      drawAxes(plot, zeroY);
+
+      const colors = [cssVar("--carrier-a"), cssVar("--carrier-b"), cssVar("--carrier-c")];
+
+      freqs.forEach((freq, idx) => {
+
+        ctx.strokeStyle = colors[idx];
+
+        ctx.lineWidth = 1.8 * DPR;
+
+        ctx.globalAlpha = 0.78;
+
+        ctx.beginPath();
+
+        for (let i = 0; i <= 720; i++) {
+
+          const phase = (i / 720) * TAU;
+
+          const y = zeroY - Math.sin(phase * (freq / fReceiver)) * amp;
+
+          const x = plot.left + (i / 720) * plot.width;
+
+          if (i === 0) ctx.moveTo(x, y);
+
+          else ctx.lineTo(x, y);
+
+        }
+
+        ctx.stroke();
+
+        ctx.globalAlpha = 1;
+
+      });
+
+      drawText("Source waves over one decode turn", plot.left, plot.top - 10 * DPR, { size: 12.5 * DPR, weight: 800, color: cssVar("--muted") });
+
+    }
+
+
+
+    function levelLabel(v) {
+
+      if (v >= HIGH_AMPLITUDE_THRESHOLD) return "high";
+
+      if (v >= ACTIVE_THRESHOLD) return "medium";
+
+      if (v >= LOW_AMPLITUDE_THRESHOLD) return "weak";
+
+      return "low";
+
+    }
+
+
+
+    function decodeTripletKey(activeEntries) {
+
+      const ordered = activeEntries.slice().sort((a, b) => a.phaseDeg - b.phaseDeg);
+
+      let subjectIndex = 0;
+
+      let bestDist = Infinity;
+
+      ordered.forEach((entry, i) => {
+
+        const d = shortestAngleDeg(entry.phaseDeg, 180);
+
+        if (d < bestDist) {
+
+          bestDist = d;
+
+          subjectIndex = i;
+
+        }
+
+      });
+
+      const prev = ordered[(subjectIndex + 2) % 3];
+
+      const subject = ordered[subjectIndex];
+
+      const next = ordered[(subjectIndex + 1) % 3];
+
+      return { key: `${prev.key}-${subject.key}-${next.key}`, subject: subject.key, ordered };
+
+    }
+
+
+
+    function computePhaseInfo(activeEntries) {
+
+      if (activeEntries.length < 3) return 0;
+
+      const ordered = activeEntries.slice().sort((a, b) => a.phaseDeg - b.phaseDeg);
+
+      const seps = [
+
+        ordered[1].phaseDeg - ordered[0].phaseDeg,
+
+        ordered[2].phaseDeg - ordered[1].phaseDeg,
+
+        ordered[0].phaseDeg + 360 - ordered[2].phaseDeg
+
+      ];
+
+      const minSep = Math.min(...seps);
+
+      const sepScore = clamp((minSep - 18) / 85, 0, 1);
+
+      const sharpnessScore = clamp(mean(activeEntries.map(e => e.prominence / 0.16)), 0, 1);
+
+      return clamp(0.65 * sepScore + 0.35 * sharpnessScore, 0, 1);
+
+    }
+
+
+
+    function genericTriplet(subject) {
+
+      if (subject === "run") return "running with a dog in bright sunlight";
+
+      if (subject === "dog") return "a dog moving fast in bright sunlight";
+
+      return "bright sun glare mixed with running and dog imagery";
+
+    }
+
+
+
+    function lowInfoTriplet(subject) {
+
+      if (subject === "run") return "running in bright sun with a dog nearby";
+
+      if (subject === "dog") return "sunlit dog in motion";
+
+      return "blinding sun around a fast dog";
+
+    }
+
+
+
+    function strongestTwoPhrase(activeEntries) {
+
+      const top = activeEntries.slice().sort((a, b) => b.amplitude - a.amplitude).slice(0, 2);
+
+      if (top.length < 2) return null;
+
+      const k = `${top[0].key}-${top[1].key}`;
+
+      return PAIR_PHRASES[k] || PAIR_PHRASES[`${top[1].key}-${top[0].key}`] || null;
+
+    }
+
+
+
+    function decodeText(sourceSpecs, results) {
+
+      const entries = sourceSpecs.map((spec, i) => ({
+
+        key: spec.key,
+
+        label: spec.label,
+
+        colorVar: spec.colorVar,
+
+        amplitude: results[i].primaryPeak.value,
+
+        power: results[i].power,
+
+        phaseDeg: results[i].primaryPeak.phaseDeg,
+
+        prominence: results[i].primaryPeak.prominence,
+
+        peaks: results[i].peaks,
+
+        weight: spec.weight,
+
+        carrier: `${spec.fCarrier.toFixed(1)} Hz`
+
+      }));
+
+
+
+      const active = entries.filter(e => e.amplitude >= ACTIVE_THRESHOLD && e.weight >= 0.12);
+
+      const avgAmp = mean(active.map(a => a.amplitude));
+
+      const maxAmp = Math.max(0, ...entries.map(e => e.amplitude));
+
+      const phaseInfo = computePhaseInfo(active);
+
+
+
+      let phrase = "nothing";
+
+      let mode = "none";
+
+      let key = "—";
+
+      let subject = "—";
+
+
+
+      if (active.length === 0 || maxAmp < LOW_AMPLITUDE_THRESHOLD) {
+
+        phrase = "nothing";
+
+        mode = "subthreshold";
+
+      } else if (active.length === 1) {
+
+        phrase = SINGLE_PHRASES[active[0].key] || "faint isolated concept";
+
+        mode = "single-source";
+
+        subject = active[0].key;
+
+      } else if (active.length === 2) {
+
+        const a = active[0].key;
+
+        const b = active[1].key;
+
+        phrase = PAIR_PHRASES[`${a}-${b}`] || PAIR_PHRASES[`${b}-${a}`] || `${active[0].label} + ${active[1].label}`;
+
+        mode = "pair";
+
+        key = `${a}-${b}`;
+
+      } else {
+
+        const triplet = decodeTripletKey(active);
+
+        key = triplet.key;
+
+        subject = triplet.subject;
+
+        if (phaseInfo >= 0.62) {
+
+          phrase = EXACT_TRIPLE_PHRASES[key] || genericTriplet(subject);
+
+          mode = "full-phase decode";
+
+        } else if (phaseInfo >= 0.38) {
+
+          phrase = genericTriplet(subject);
+
+          mode = "reduced phase info";
+
+        } else if (avgAmp >= HIGH_AMPLITUDE_THRESHOLD) {
+
+          phrase = "glowing fast dog";
+
+          mode = "high amplitude, low phase info";
+
+        } else if (avgAmp >= ACTIVE_THRESHOLD) {
+
+          phrase = lowInfoTriplet(subject);
+
+          mode = "weak phase info";
+
+        } else {
+
+          phrase = "nothing";
+
+          mode = "subthreshold triplet";
+
+        }
+
+      }
+
+
+
+      const fallbackHigh = active.length === 3 ? (EXACT_TRIPLE_PHRASES[key] || genericTriplet(subject || "dog")) : (phrase !== "nothing" ? phrase : strongestTwoPhrase(entries.filter(e => e.amplitude >= LOW_AMPLITUDE_THRESHOLD)) || "nothing");
+
+      const fallbackMid = active.length === 3 ? genericTriplet(subject || "dog") : strongestTwoPhrase(entries.filter(e => e.amplitude >= LOW_AMPLITUDE_THRESHOLD)) || phrase;
+
+      const fallbackLow = active.length === 3 ? (avgAmp >= HIGH_AMPLITUDE_THRESHOLD ? "glowing fast dog" : lowInfoTriplet(subject || "dog")) : (strongestTwoPhrase(entries.filter(e => e.amplitude >= ACTIVE_THRESHOLD)) || phrase);
+
+
+
+      return {
+
+        phrase,
+
+        mode,
+
+        key,
+
+        subject,
+
+        phaseInfo,
+
+        avgAmp,
+
+        activeCount: active.length,
+
+        active,
+
+        entries,
+
+        fallbackHigh,
+
+        fallbackMid,
+
+        fallbackLow
+
+      };
+
+    }
+
+
+
+    function renderDecoderPanel(decoded) {
+
+      decodePhrase.textContent = decoded.phrase;
+
+
+
+      decodeMeta.innerHTML = [
+
+        `<span>mode: ${decoded.mode}</span>`,
+
+        `<span>phase info: ${decoded.phaseInfo.toFixed(2)}</span>`,
+
+        `<span>avg active amplitude: ${decoded.avgAmp.toFixed(2)}</span>`,
+
+        `<span>active sources: ${decoded.activeCount}/3</span>`,
+
+        `<span>key: ${decoded.key}</span>`,
+
+        `<span>subject: ${decoded.subject}</span>`
+
+      ].join("");
+
+
+
+      decodeLadder.innerHTML = `
+
+        <div><strong>phase-info ladder:</strong></div>
+
+        <div><span class="chip">high</span> ${decoded.fallbackHigh}</div>
+
+        <div><span class="chip">medium</span> ${decoded.fallbackMid}</div>
+
+        <div><span class="chip">low</span> ${decoded.fallbackLow}</div>
+
+      `;
+
+
+
+      decodeSources.innerHTML = "";
+
+    }
+
+
+
+    function draw() {
+
+      const width = canvas.width;
+
+      const height = canvas.height;
+
+      ctx.clearRect(0, 0, width, height);
+
+      ctx.fillStyle = "#ffffff";
+
+      ctx.fillRect(0, 0, width, height);
+
+
+
+      const fReceiver = +receiverFreq.value;
+
+      const beta = +emaBeta.value;
+
+      const sumGainValue = COMPOSITE_GAIN;
+
+      const effectiveTurns = 1 / (1 - beta);
+
+      const renderedTurns = Math.max(MIN_DISPLAY_TURNS, Math.min(MAX_DISPLAY_TURNS, effectiveTurns));
+
+      const samples = Math.min(22000, Math.max(1200, Math.ceil(renderedTurns * SAMPLES_PER_TURN)));
+
+
+
+      receiverFreqVal.textContent = `${fReceiver.toFixed(1)} Hz`;
+
+      emaBetaVal.textContent = `β=${beta.toFixed(3)} · ${renderedTurns.toFixed(1)} turns`;
+
+
+
+      const sourceSpecs = sources.map(src => {
+
+        const fCarrier = +src.freq.value;
+
+        const phaseDeg = +src.phase.value;
+
+        const weight = SOURCE_WEIGHT;
+
+        src.freqVal.textContent = `${fCarrier.toFixed(1)} Hz`;
+
+        src.phaseVal.textContent = `${phaseDeg}°`;
+
+        return {
+
+          key: src.key,
+
+          label: src.label,
+
+          longLabel: src.longLabel,
+
+          colorVar: src.colorVar,
+
+          phaseDeg,
+
+          phaseRad: toRad(phaseDeg),
+
+          weight,
+
+          fCarrier
+
+        };
+
+      });
+
+
+
+      const results = sourceSpecs.map(spec => phaseEmaForSource({
+
+        fCarrier: spec.fCarrier,
+
+        phaseRad: spec.phaseRad,
+
+        fReceiver,
+
+        beta,
+
+        renderedTurns,
+
+        samples,
+
+        weight: spec.weight
+
+      }));
+
+
+
+      const decoded = decodeText(sourceSpecs, results);
+
+      renderDecoderPanel(decoded);
+
+
+
+      const pad = { left: 48 * DPR, right: 34 * DPR, top: 50 * DPR, bottom: 42 * DPR };
+
+      drawText("Phase-coded control information: running + dog + sunlight", pad.left, 24 * DPR, { size: 16 * DPR, weight: 800 });
+
+
+
+      const contentTop = pad.top;
+
+      const contentH = height - pad.top - pad.bottom;
+
+      const carrierPlot = {
+
+        left: pad.left,
+
+        top: contentTop + 4 * DPR,
+
+        width: width - pad.left - pad.right,
+
+        height: contentH * 0.13
+
+      };
+
+      const circleTop = carrierPlot.top + carrierPlot.height + 30 * DPR;
+
+      const circleH = contentH * 0.31;
+
+      const circleR = Math.min(width * 0.085, circleH * 0.34);
+
+      const circleY = circleTop + circleH * 0.55;
+
+      const circleXs = [width * 0.20, width * 0.50, width * 0.80];
+
+      const flatPlot = {
+
+        left: pad.left,
+
+        top: circleTop + circleH + 34 * DPR,
+
+        width: width - pad.left - pad.right,
+
+        height: contentH * 0.36
+
+      };
+
+
+
+      drawCarrierReference(carrierPlot, sourceSpecs.map(spec => spec.fCarrier), fReceiver);
+
+      results.forEach((result, i) => {
+
+        const spec = sourceSpecs[i];
+
+        const color = cssVar(spec.colorVar);
+
+        drawWoundSource(
+
+          { cx: circleXs[i], cy: circleY, r: circleR },
+
+          result,
+
+          color,
+
+          spec.label,
+
+          `${spec.fCarrier.toFixed(1)} Hz · ${spec.phaseDeg}°`
+
+        );
+
+      });
+
+      drawFlatDecodedPanel(flatPlot, results, sourceSpecs, sumGainValue);
+
+    }
+
+
+
+    [receiverFreq, emaBeta, ...sources.flatMap(s => [s.freq, s.phase])].forEach(el => {
+
+      el.addEventListener("input", draw);
+
+      el.addEventListener("change", draw);
+
+    });
+
+
+
+    window.addEventListener("resize", resizeCanvas);
+
+    resizeCanvas();
+
+  </script>
+
+
+

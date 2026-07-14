@@ -1,0 +1,592 @@
+
+
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Constructive / Destructive Interference</title>
+  <style>
+    :root {
+      --bg: #fbfbfd;
+      --panel: #ffffff;
+      --text: #1f2430;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --wave1: #2563eb;
+      --wave2: #a855f7;
+      --sum: #111827;
+      --grid: #e9edf4;
+      --axis: #b8c2d1;
+    }
+
+    html, body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 8px 28px rgba(22, 30, 50, 0.08);
+      overflow: hidden;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      align-items: end;
+    }
+
+    .control {
+      min-width: 0;
+    }
+
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .value {
+      color: var(--muted);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--wave1);
+    }
+
+    #freq2,
+    #phase2 {
+      accent-color: var(--wave2);
+    }
+
+    .button-wrap {
+      display: flex;
+      align-items: end;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid #cbd5e1;
+      background: linear-gradient(180deg, #f8fafc, #e5e7eb);
+      color: #111827;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.10);
+    }
+
+    button:hover {
+      background: linear-gradient(180deg, #ffffff, #e5e7eb);
+    }
+
+    button.playing {
+      border-color: #dc2626;
+      background: linear-gradient(180deg, #fee2e2, #ef4444);
+      color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.22), 0 8px 24px rgba(239, 68, 68, 0.45);
+    }
+
+    .canvas-wrap {
+      padding: 14px;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 14px;
+      background: #ffffff;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 0 16px 16px 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .swatch {
+      width: 20px;
+      height: 4px;
+      border-radius: 999px;
+      background: #000;
+    }
+
+    .swatch.wave1 { background: var(--wave1); }
+    .swatch.wave2 { background: var(--wave2); }
+    .swatch.sum   { background: var(--sum); }
+
+    .swatch.fill {
+      width: 28px;
+      height: 10px;
+      background: linear-gradient(90deg, #cf2f2f 0%, #f3b1b1 25%, #ffffff 50%, #bce7c0 75%, #24a148 100%);
+      border: 1px solid #d7dde7;
+    }
+
+    @media (max-width: 900px) {
+      .controls {
+        grid-template-columns: 1fr 1fr;
+      }
+      .button-wrap {
+        grid-column: span 2;
+        justify-content: stretch;
+      }
+      .button-wrap button {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+      .button-wrap {
+        grid-column: span 1;
+      }
+    }
+  </style>
+
+
+  <div class="wrap">
+    <div class="card">
+      <div class="controls">
+        <div class="control">
+          <label>
+            <span>Wave 1 frequency</span>
+            <span class="value" id="freq1Val">440 Hz</span>
+          </label>
+          <input id="freq1" type="range" min="100" max="1200" step="1" value="440">
+        </div>
+
+        <div class="control">
+          <label>
+            <span>Wave 1 phase</span>
+            <span class="value" id="phase1Val">0°</span>
+          </label>
+          <input id="phase1" type="range" min="0" max="360" step="1" value="0">
+        </div>
+
+        <div class="control">
+          <label>
+            <span>Wave 2 frequency</span>
+            <span class="value" id="freq2Val">660 Hz</span>
+          </label>
+          <input id="freq2" type="range" min="100" max="1200" step="1" value="660">
+        </div>
+
+        <div class="control">
+          <label>
+            <span>Wave 2 phase</span>
+            <span class="value" id="phase2Val">0°</span>
+          </label>
+          <input id="phase2" type="range" min="0" max="360" step="1" value="0">
+        </div>
+
+        <div class="button-wrap">
+          <button id="playBtn">Play sound</button>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="plot" width="1400" height="860"></canvas>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><span class="swatch wave1"></span><span>Wave 1</span></div>
+        <div class="legend-item"><span class="swatch wave2"></span><span>Wave 2</span></div>
+        <div class="legend-item"><span class="swatch sum"></span><span>Summed wave</span></div>
+        <div class="legend-item"><span class="swatch fill"></span><span>Amplitude-product shading: red = opposite sign, green = same sign</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("plot");
+    const ctx = canvas.getContext("2d");
+
+    const freq1 = document.getElementById("freq1");
+    const freq2 = document.getElementById("freq2");
+    const phase1 = document.getElementById("phase1");
+    const phase2 = document.getElementById("phase2");
+    const freq1Val = document.getElementById("freq1Val");
+    const freq2Val = document.getElementById("freq2Val");
+    const phase1Val = document.getElementById("phase1Val");
+    const phase2Val = document.getElementById("phase2Val");
+    const playBtn = document.getElementById("playBtn");
+
+    let audioCtx = null;
+    let currentSource = null;
+    let stopTimeout = null;
+    let isPlaying = false;
+
+    const DPR = Math.max(1, window.devicePixelRatio || 1);
+
+    function resizeCanvas() {
+      const displayWidth = canvas.clientWidth;
+      const displayHeight = Math.round(displayWidth * 0.62);
+      canvas.style.height = displayHeight + "px";
+      canvas.width = Math.round(displayWidth * DPR);
+      canvas.height = Math.round(displayHeight * DPR);
+      draw();
+    }
+
+    function toRad(deg) {
+      return deg * Math.PI / 180;
+    }
+
+    function mixColor(c1, c2, t) {
+      return {
+        r: Math.round(c1.r + (c2.r - c1.r) * t),
+        g: Math.round(c1.g + (c2.g - c1.g) * t),
+        b: Math.round(c1.b + (c2.b - c1.b) * t)
+      };
+    }
+
+    function colorForProduct(p) {
+      const redStrong   = { r: 207, g: 47,  b: 47  };
+      const redSoft     = { r: 243, g: 177, b: 177 };
+      const white       = { r: 255, g: 255, b: 255 };
+      const greenSoft   = { r: 188, g: 231, b: 192 };
+      const greenStrong = { r: 36,  g: 161, b: 72  };
+
+      let c;
+
+      if (p < -0.5) {
+        c = mixColor(redStrong, redSoft, (p + 1.0) / 0.5);
+      } else if (p < 0) {
+        c = mixColor(redSoft, white, (p + 0.5) / 0.5);
+      } else if (p < 0.5) {
+        c = mixColor(white, greenSoft, p / 0.5);
+      } else {
+        c = mixColor(greenSoft, greenStrong, (p - 0.5) / 0.5);
+      }
+
+      return `rgb(${c.r}, ${c.g}, ${c.b})`;
+    }
+
+    function drawGridAndAxes(plot, centerY, horizontalGridCount = 4) {
+      ctx.lineWidth = 1 * DPR;
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim();
+      ctx.beginPath();
+
+      const verticalGridCount = 10;
+      for (let i = 0; i <= verticalGridCount; i++) {
+        const x = plot.left + (i / verticalGridCount) * plot.width;
+        ctx.moveTo(x, plot.top);
+        ctx.lineTo(x, plot.top + plot.height);
+      }
+
+      for (let i = 0; i <= horizontalGridCount; i++) {
+        const y = plot.top + (i / horizontalGridCount) * plot.height;
+        ctx.moveTo(plot.left, y);
+        ctx.lineTo(plot.left + plot.width, y);
+      }
+
+      ctx.stroke();
+
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--axis").trim();
+      ctx.lineWidth = 1.5 * DPR;
+      ctx.beginPath();
+      ctx.moveTo(plot.left, centerY);
+      ctx.lineTo(plot.left + plot.width, centerY);
+      ctx.moveTo(plot.left, plot.top);
+      ctx.lineTo(plot.left, plot.top + plot.height);
+      ctx.stroke();
+    }
+
+    function strokeWave(xs, ys, color, lineWidth = 3) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth * DPR;
+      ctx.beginPath();
+      ctx.moveTo(xs[0], ys[0]);
+
+      for (let i = 1; i < xs.length; i++) {
+        ctx.lineTo(xs[i], ys[i]);
+      }
+
+      ctx.stroke();
+    }
+
+    function draw() {
+      const width = canvas.width;
+      const height = canvas.height;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const pad = {
+        left: 28 * DPR,
+        right: 30 * DPR,
+        top: 56 * DPR,
+        bottom: 54 * DPR
+      };
+
+      const gutter = 44 * DPR;
+      const plotW = width - pad.left - pad.right;
+      const availableH = height - pad.top - pad.bottom - gutter;
+
+      const carrierPlot = {
+        left: pad.left,
+        top: pad.top,
+        width: plotW,
+        height: availableH * 0.58
+      };
+
+      const sumPlot = {
+        left: pad.left,
+        top: pad.top + availableH * 0.58 + gutter,
+        width: plotW,
+        height: availableH * 0.42
+      };
+
+      const carrierCenterY = carrierPlot.top + carrierPlot.height / 2;
+      const sumCenterY = sumPlot.top + sumPlot.height / 2;
+
+      const carrierAmp = carrierPlot.height * 0.36;
+      const sumAmp = sumPlot.height * 0.32;
+
+      const f1 = +freq1.value;
+      const f2 = +freq2.value;
+      const p1 = toRad(+phase1.value);
+      const p2 = toRad(+phase2.value);
+
+      freq1Val.textContent = `${f1} Hz`;
+      freq2Val.textContent = `${f2} Hz`;
+      phase1Val.textContent = `${phase1.value}°`;
+      phase2Val.textContent = `${phase2.value}°`;
+
+      // Show a 10 ms window. This makes 440 and 660 Hz visually readable.
+      const duration = 0.010;
+      const samples = Math.max(1600, Math.floor(plotW));
+
+      const xs = new Array(samples);
+      const y1s = new Array(samples);
+      const y2s = new Array(samples);
+      const ySums = new Array(samples);
+      const a1s = new Array(samples);
+      const a2s = new Array(samples);
+
+      for (let i = 0; i < samples; i++) {
+        const u = i / (samples - 1);
+        const t = u * duration;
+        const x = pad.left + u * plotW;
+
+        const a1 = Math.sin(2 * Math.PI * f1 * t + p1);
+        const a2 = Math.sin(2 * Math.PI * f2 * t + p2);
+        const sum = a1 + a2;
+
+        xs[i] = x;
+        a1s[i] = a1;
+        a2s[i] = a2;
+        y1s[i] = carrierCenterY - a1 * carrierAmp;
+        y2s[i] = carrierCenterY - a2 * carrierAmp;
+        ySums[i] = sumCenterY - sum * sumAmp;
+      }
+
+      // Background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+
+      drawGridAndAxes(carrierPlot, carrierCenterY, 6);
+      drawGridAndAxes(sumPlot, sumCenterY, 4);
+
+      // Fill between carrier waves
+      for (let i = 0; i < samples - 1; i++) {
+        const product = a1s[i] * a2s[i];
+
+        ctx.fillStyle = colorForProduct(product);
+        ctx.globalAlpha = 0.92;
+
+        ctx.beginPath();
+        ctx.moveTo(xs[i], y1s[i]);
+        ctx.lineTo(xs[i + 1], y1s[i + 1]);
+        ctx.lineTo(xs[i + 1], y2s[i + 1]);
+        ctx.lineTo(xs[i], y2s[i]);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+
+      strokeWave(xs, y1s, getComputedStyle(document.documentElement).getPropertyValue("--wave1").trim(), 3);
+      strokeWave(xs, y2s, getComputedStyle(document.documentElement).getPropertyValue("--wave2").trim(), 3);
+      strokeWave(xs, ySums, getComputedStyle(document.documentElement).getPropertyValue("--sum").trim(), 3.5);
+
+      // Title and subtitle
+      ctx.fillStyle = "#111827";
+      ctx.font = `600 ${16 * DPR}px system-ui, sans-serif`;
+      ctx.textAlign = "left";
+      ctx.fillText("Constructive / Destructive Interference", pad.left, 20 * DPR);
+
+      ctx.fillStyle = "#6b7280";
+      ctx.font = `${12.5 * DPR}px system-ui, sans-serif`;
+      ctx.fillText("Shading is based on the pointwise product of the two carrier amplitudes.", pad.left, 40 * DPR);
+
+      // Bottom time label
+      ctx.fillStyle = "#4b5563";
+      ctx.font = `${13 * DPR}px system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("time", pad.left + plotW / 2, height - 16 * DPR);
+    }
+
+    async function startAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      if (audioCtx.state === "suspended") {
+        await audioCtx.resume();
+      }
+
+      stopAudio();
+
+      const f1 = +freq1.value;
+      const f2 = +freq2.value;
+      const p1 = toRad(+phase1.value);
+      const p2 = toRad(+phase2.value);
+
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+
+      const delay1 = audioCtx.createDelay();
+      const delay2 = audioCtx.createDelay();
+
+      const gain1 = audioCtx.createGain();
+      const gain2 = audioCtx.createGain();
+      const masterGain = audioCtx.createGain();
+
+      osc1.type = "sine";
+      osc2.type = "sine";
+
+      osc1.frequency.value = f1;
+      osc2.frequency.value = f2;
+
+      // Phase-offset oscillators with short delay nodes.
+      // This is perceptually adequate for this demo; oscillator phase itself
+      // is not directly settable in the Web Audio API.
+      delay1.delayTime.value = (p1 / (2 * Math.PI)) / f1;
+      delay2.delayTime.value = (p2 / (2 * Math.PI)) / f2;
+
+      gain1.gain.value = 0.28;
+      gain2.gain.value = 0.28;
+
+      masterGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      masterGain.gain.exponentialRampToValueAtTime(0.75, audioCtx.currentTime + 0.03);
+
+      osc1.connect(delay1);
+      osc2.connect(delay2);
+
+      delay1.connect(gain1);
+      delay2.connect(gain2);
+
+      gain1.connect(masterGain);
+      gain2.connect(masterGain);
+
+      masterGain.connect(audioCtx.destination);
+
+      osc1.start();
+      osc2.start();
+
+      currentSource = {
+        osc1,
+        osc2,
+        masterGain,
+        stop() {
+          const now = audioCtx.currentTime;
+
+          masterGain.gain.cancelScheduledValues(now);
+          masterGain.gain.setValueAtTime(Math.max(masterGain.gain.value, 0.0001), now);
+          masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+
+          setTimeout(() => {
+            try { osc1.stop(); } catch (_) {}
+            try { osc2.stop(); } catch (_) {}
+            try { osc1.disconnect(); } catch (_) {}
+            try { osc2.disconnect(); } catch (_) {}
+            try { delay1.disconnect(); } catch (_) {}
+            try { delay2.disconnect(); } catch (_) {}
+            try { gain1.disconnect(); } catch (_) {}
+            try { gain2.disconnect(); } catch (_) {}
+            try { masterGain.disconnect(); } catch (_) {}
+          }, 60);
+        }
+      };
+
+      isPlaying = true;
+      playBtn.textContent = "Stop sound";
+      playBtn.classList.add("playing");
+    }
+
+    function stopAudio() {
+      if (stopTimeout) {
+        clearTimeout(stopTimeout);
+        stopTimeout = null;
+      }
+
+      if (currentSource) {
+        try { currentSource.stop(); } catch (_) {}
+        currentSource = null;
+      }
+
+      isPlaying = false;
+      playBtn.textContent = "Play sound";
+      playBtn.classList.remove("playing");
+    }
+
+    [freq1, freq2, phase1, phase2].forEach(el => {
+      el.addEventListener("input", () => {
+        draw();
+
+        // If sound is already playing, restart it with the new settings.
+        if (isPlaying) {
+          startAudio();
+        }
+      });
+    });
+
+    playBtn.addEventListener("click", async () => {
+      if (isPlaying) {
+        stopAudio();
+      } else {
+        await startAudio();
+      }
+    });
+
+    window.addEventListener("resize", resizeCanvas);
+
+    resizeCanvas();
+  </script>
+

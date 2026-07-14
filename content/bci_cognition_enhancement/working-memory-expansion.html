@@ -30,7 +30,7 @@
 
 <p>Constructive interference, where multiple signals combine into a single loud signal, looks like this:</p>
 
-<div></div>
+<iframe class="lw-widget" loading="lazy" src="widgets/working-memory-expansion-widget-1.html"></iframe>
 
 <p> when you sum across separate signals. This is how we get musical chords.</p>
 
@@ -38,25 +38,25 @@
 
 <p>We can also loop one signal and see how it interferes with <i>itself</i>; by tuning the loop frequency, we can isolate the power of a carrier signal.<sup><a href="#fn4" id="fnref4">4</a></sup></p>
 
-<div></div>
+<iframe class="lw-widget" loading="lazy" src="widgets/working-memory-expansion-widget-2.html"></iframe>
 
 <p><br/></p>
 
 <p>If we smooth the summing process (added EMA parameter), we can <a href="https://www.youtube.com/watch?v=MBnnXbOM5S4">trade spectral for temporal precision</a>; the receiver is less sensitive to frequency changes, but can come to a conclusion faster.</p>
 
-<div></div>
+<iframe class="lw-widget" loading="lazy" src="widgets/working-memory-expansion-widget-3.html"></iframe>
 
 <p><br/></p>
 
 <p>By turning the carrier on and off, we can encode and decode lower-frequency signals. This is how AM (amplitude modulation) radio works.</p>
 
-<div></div>
+<iframe class="lw-widget" loading="lazy" src="widgets/working-memory-expansion-widget-4.html"></iframe>
 
 <p><br/></p>
 
 <p>Shifting the carrier frequency likewise changes how well it sums on the receiver, and we can use it to encode signals too.</p>
 
-<div></div>
+<iframe class="lw-widget" loading="lazy" src="widgets/working-memory-expansion-widget-5.html"></iframe>
 
 <p><br/></p>
 
@@ -78,7 +78,7 @@
 
 <p>In mice, phase encodes spatial relationships between place-sensitive neurons; phase probably also encodes more nuanced semantic relationships.</p>
 
-<div></div>
+<iframe class="lw-widget" loading="lazy" src="widgets/working-memory-expansion-widget-6.html"></iframe>
 
 <p><br/></p>
 
@@ -114,4 +114,4 @@
 
 <hr/>
 
-<ol><li id="fn1"><p><a href="https://doi.org/10.1016/j.neuron.2020.07.011">Here's a good paper</a> for the theoretical background.</p><a href="#fnref1"> ↩</a></li><li id="fn2"><p>Worst bedtime story ever</p><a href="#fnref2"> ↩</a></li><li id="fn3"><p>See <a href="https://www.researchgate.net/publication/323942131_Cortical_travelling_waves_Mechanisms_and_computational_principles">here</a> (or <a href="https://doi.org/10.1038/nrn.2018.20">here</a> if the free link breaks) for a broader treatment.</p><a href="#fnref3"> ↩</a></li><li id="fn4"><p>In real physical radios (and interferometers etc) the antenna converts the electromagnetic wave into currents which still carry the harmonics you'll notice if you set the carrier to, say, 880hz and the receiver to 440. I'm not a radio expert, but from a <a href="https://chatgpt.com/share/6a15d117-174c-83ea-8803-a632056d7ec0">conversation</a> with GPT, it seems to me that integer overtones are very hard to filter. This, along with the temporal-spectral uncertainty tradeoff <a href="https://www.youtube.com/watch?v=MBnnXbOM5S4">linked above</a>, would physically limit how many items could stay in working memory for any response time; I hadn't considered Fourier uncertainty as a potential limiter until writing this all out, so I <a href="https://github.com/ElliotCallender/FM_decoding_accuracy/tree/main">tested it</a>.</p><p>If we allow 20-40hz addressing (one octave to avoid harmonic issues), the maximum working memory capacity scales linearly with response time, at about 6 items per 100ms decode window (at 99.6% decode accuracy).</p><p>But this only accounts for boolean "are we bound or not?"; phase also very likely <a href="https://www.youtube.com/watch?v=iV-EMA5g288">encodes semantic relationships</a>. Each bit we add halves the number of possible carriers, so our information throughput is exactly identical in expectation across all configurations; decoding time and signal-to-noise ratio (which is also linear) fully describe our input.</p><p>I don't think anyone will measure phase-modulated working memory decode time with existing tech. Absent such data, humans seem pretty close to the Pareto frontier of ~30 binding bits per 500ms, especially if binding data carries &gt;1bit per concept.</p><a href="#fnref4"> ↩</a><a href="#fnref4-2"> ↩</a></li><li id="fn5"><p>This is a stronger claim than I've seen SCT researchers make.</p><a href="#fnref5"> ↩</a></li><li id="fn6"><p>Not in the sense of providing more cognitive headroom. This just lets you notice what being wrong feels like.</p><a href="#fnref6"> ↩</a></li></ol>
+<ol><li id="fn1"><p><a href="https://doi.org/10.1016/j.neuron.2020.07.011">Here's a good paper</a> for the theoretical background.<a href="#fnref1"> ↩</a></p></li><li id="fn2"><p>Worst bedtime story ever<a href="#fnref2"> ↩</a></p></li><li id="fn3"><p>See <a href="https://www.researchgate.net/publication/323942131_Cortical_travelling_waves_Mechanisms_and_computational_principles">here</a> (or <a href="https://doi.org/10.1038/nrn.2018.20">here</a> if the free link breaks) for a broader treatment.<a href="#fnref3"> ↩</a></p></li><li id="fn4"><p>In real physical radios (and interferometers etc) the antenna converts the electromagnetic wave into currents which still carry the harmonics you'll notice if you set the carrier to, say, 880hz and the receiver to 440. I'm not a radio expert, but from a <a href="https://chatgpt.com/share/6a15d117-174c-83ea-8803-a632056d7ec0">conversation</a> with GPT, it seems to me that integer overtones are very hard to filter. This, along with the temporal-spectral uncertainty tradeoff <a href="https://www.youtube.com/watch?v=MBnnXbOM5S4">linked above</a>, would physically limit how many items could stay in working memory for any response time; I hadn't considered Fourier uncertainty as a potential limiter until writing this all out, so I <a href="https://github.com/ElliotCallender/FM_decoding_accuracy/tree/main">tested it</a>.</p><p>If we allow 20-40hz addressing (one octave to avoid harmonic issues), the maximum working memory capacity scales linearly with response time, at about 6 items per 100ms decode window (at 99.6% decode accuracy).</p><p>But this only accounts for boolean "are we bound or not?"; phase also very likely <a href="https://www.youtube.com/watch?v=iV-EMA5g288">encodes semantic relationships</a>. Each bit we add halves the number of possible carriers, so our information throughput is exactly identical in expectation across all configurations; decoding time and signal-to-noise ratio (which is also linear) fully describe our input.</p><p>I don't think anyone will measure phase-modulated working memory decode time with existing tech. Absent such data, humans seem pretty close to the Pareto frontier of ~30 binding bits per 500ms, especially if binding data carries &gt;1bit per concept.<a href="#fnref4"> ↩</a><a href="#fnref4-2"> ↩</a></p></li><li id="fn5"><p>This is a stronger claim than I've seen SCT researchers make.<a href="#fnref5"> ↩</a></p></li><li id="fn6"><p>Not in the sense of providing more cognitive headroom. This just lets you notice what being wrong feels like.<a href="#fnref6"> ↩</a></p></li></ol>

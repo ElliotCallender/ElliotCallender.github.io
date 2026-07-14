@@ -1,0 +1,953 @@
+
+
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FM Keying: EMA Winding Decoder</title>
+  <style>
+    :root {
+      --bg: #fbfbfd;
+      --panel: #ffffff;
+      --text: #1f2430;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --carrier: #2563eb;
+      --receiver: #a855f7;
+      --ema: #8b5cf6;
+      --power: #f59e0b;
+      --grid: #e9edf4;
+      --axis: #b8c2d1;
+      --one: #24a148;
+      --zero: #d1d5db;
+      --threshold: #111827;
+    }
+
+    html, body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 8px 28px rgba(22, 30, 50, 0.08);
+      overflow: hidden;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.25fr) repeat(5, minmax(120px, 1fr));
+      gap: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      align-items: end;
+    }
+
+    .control { min-width: 0; }
+
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .value {
+      color: var(--muted);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--carrier);
+    }
+
+    #bitInput {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font: 700 16px ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      letter-spacing: 0.08em;
+      color: var(--text);
+    }
+
+    #fmDepth { accent-color: var(--one); }
+    #receiverFreq { accent-color: var(--receiver); }
+    #emaBeta { accent-color: var(--ema); }
+    #carrierCycles { accent-color: var(--carrier); }
+
+    .hint {
+      margin-top: 5px;
+      font-size: 11.5px;
+      line-height: 1.25;
+      color: var(--muted);
+    }
+
+    .canvas-wrap { padding: 14px; }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 14px;
+      background: #ffffff;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 0 16px 16px 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .swatch {
+      width: 22px;
+      height: 4px;
+      border-radius: 999px;
+      background: #000;
+    }
+
+    .swatch.carrier { background: var(--carrier); }
+    .swatch.receiver { background: var(--receiver); }
+    .swatch.ema { background: var(--ema); }
+    .swatch.power { background: var(--power); }
+    .swatch.threshold { background: var(--threshold); }
+
+    @media (max-width: 950px) {
+      .controls { grid-template-columns: 1fr; }
+    }
+  </style>
+
+
+  <div class="wrap">
+    <div class="card">
+      <div class="controls">
+        <div class="control">
+          <label for="bitInput">
+            <span>8-bit FM message</span>
+            <span class="value" id="cleanBitsVal">10110010</span>
+          </label>
+          <input id="bitInput" type="text" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="8" value="10110010" aria-label="8-bit binary message">
+          <div class="hint">Type eight 0/1 digits. 1 stays receiver-locked; 0 is frequency-detuned by the FM slider.</div>
+        </div>
+
+        <div class="control">
+          <label for="fmDepth">
+            <span>FM detune depth</span>
+            <span class="value" id="fmDepthVal">20%</span>
+          </label>
+          <input id="fmDepth" type="range" min="0" max="100" step="1" value="20">
+          <div class="hint">0-key frequency offset as a percent of the carrier; 1-key remains receiver-locked.</div>
+        </div>
+
+        <div class="control">
+          <label for="carrierFreq">
+            <span>Carrier frequency</span>
+            <span class="value" id="carrierFreqVal">440 Hz</span>
+          </label>
+          <input id="carrierFreq" type="range" min="120" max="1200" step="1" value="440">
+          <div class="hint">Nominal carrier wave; 1-key uses this frequency.</div>
+        </div>
+
+        <div class="control">
+          <label for="carrierCycles">
+            <span>Carrier cycles / bit</span>
+            <span class="value" id="carrierCyclesVal">8</span>
+          </label>
+          <input id="carrierCycles" type="range" min="1" max="64" step="1" value="8">
+          <div class="hint">Key-window duration in carrier cycles.</div>
+        </div>
+
+        <div class="control">
+          <label for="receiverFreq">
+            <span>Receiver frequency</span>
+            <span class="value" id="receiverFreqVal">440 Hz</span>
+          </label>
+          <input id="receiverFreq" type="range" min="120" max="1200" step="1" value="440">
+          <div class="hint">Receiver phase determines how the carrier winds around the circle.</div>
+        </div>
+
+        <div class="control">
+          <label for="emaBeta">
+            <span>EMA beta / r</span>
+            <span class="value" id="emaBetaVal">β=0.900</span>
+          </label>
+          <input id="emaBeta" type="range" min="0.700" max="0.985" step="0.001" value="0.900">
+          <div class="hint">EMA = receiver-wound carrier summed with exponential decay.</div>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="plot" width="1400" height="980"></canvas>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("plot");
+    const ctx = canvas.getContext("2d");
+
+    const bitInput = document.getElementById("bitInput");
+    const cleanBitsVal = document.getElementById("cleanBitsVal");
+    const fmDepth = document.getElementById("fmDepth");
+    const fmDepthVal = document.getElementById("fmDepthVal");
+    const carrierFreq = document.getElementById("carrierFreq");
+    const carrierFreqVal = document.getElementById("carrierFreqVal");
+    const carrierCycles = document.getElementById("carrierCycles");
+    const carrierCyclesVal = document.getElementById("carrierCyclesVal");
+    const receiverFreq = document.getElementById("receiverFreq");
+    const receiverFreqVal = document.getElementById("receiverFreqVal");
+    const emaBeta = document.getElementById("emaBeta");
+    const emaBetaVal = document.getElementById("emaBetaVal");
+
+    const DPR = Math.max(1, window.devicePixelRatio || 1);
+    const BIT_COUNT = 8;
+    const DEFAULT_CARRIER_CYCLES_PER_BIT = 8;
+    const SAMPLES_PER_CARRIER_CYCLE = 72;
+    const BIN_COUNT = 180;
+    const PHASE_SPLAT_RADIUS = 3;
+    const THRESHOLD = 0.42;
+    const SINE_ABS_MEAN = 2 / Math.PI;
+
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    function wrapPhase(phase) {
+      const tau = Math.PI * 2;
+      return ((phase % tau) + tau) % tau;
+    }
+
+    function sampleCircular(values, phase) {
+      const tau = Math.PI * 2;
+      const pos = (wrapPhase(phase) / tau) * BIN_COUNT;
+      const i0 = Math.floor(pos) % BIN_COUNT;
+      const i1 = (i0 + 1) % BIN_COUNT;
+      const frac = pos - Math.floor(pos);
+      return lerp(values[i0], values[i1], frac);
+    }
+
+    function sanitizeBits(value) {
+      const typed = (value.match(/[01]/g) || []).join("").slice(0, BIT_COUNT);
+      return typed.padEnd(BIT_COUNT, "0");
+    }
+
+    function drawText(text, x, y, opts = {}) {
+      ctx.fillStyle = opts.color || cssVar("--text");
+      ctx.font = `${opts.weight || 500} ${opts.size || 12}px system-ui, sans-serif`;
+      ctx.textAlign = opts.align || "left";
+      ctx.textBaseline = opts.baseline || "alphabetic";
+      ctx.fillText(text, x, y);
+    }
+
+    function drawGrid(plot, horizontalCount = 4, verticalCount = 8) {
+      ctx.lineWidth = 1 * DPR;
+      ctx.strokeStyle = cssVar("--grid");
+      ctx.beginPath();
+      for (let i = 0; i <= verticalCount; i++) {
+        const x = plot.left + (i / verticalCount) * plot.width;
+        ctx.moveTo(x, plot.top);
+        ctx.lineTo(x, plot.top + plot.height);
+      }
+      for (let i = 0; i <= horizontalCount; i++) {
+        const y = plot.top + (i / horizontalCount) * plot.height;
+        ctx.moveTo(plot.left, y);
+        ctx.lineTo(plot.left + plot.width, y);
+      }
+      ctx.stroke();
+    }
+
+    function makeSignalTrace(bits, fCarrier, fmDepthPct, cyclesPerBit) {
+      const bitDuration = cyclesPerBit / fCarrier;
+      const samplesPerBit = cyclesPerBit * SAMPLES_PER_CARRIER_CYCLE;
+      const totalSamples = BIT_COUNT * samplesPerBit;
+      const totalDuration = BIT_COUNT * bitDuration;
+      const dt = totalDuration / totalSamples;
+      const trace = [];
+      const zeroFreq = fCarrier * (1 + fmDepthPct / 100);
+      const oneFreq = fCarrier;
+      let phase = 0;
+
+      for (let s = 0; s <= totalSamples; s++) {
+        const t = s * dt;
+        const bitIndex = Math.min(BIT_COUNT - 1, Math.floor(t / bitDuration));
+        const freq = bits[bitIndex] ? oneFreq : zeroFreq;
+        if (s > 0) phase += 2 * Math.PI * freq * dt;
+        const signal = Math.sin(phase);
+        trace.push({ t, bitIndex, freq, phase, signal, sampleIndex: s });
+      }
+
+      return { trace, bitDuration, totalDuration, samplesPerBit, totalSamples, dt, zeroFreq, oneFreq };
+    }
+
+    function smoothBins(bins) {
+      return bins.map((_, i) => {
+        const prev2 = bins[(i - 2 + BIN_COUNT) % BIN_COUNT];
+        const prev = bins[(i - 1 + BIN_COUNT) % BIN_COUNT];
+        const curr = bins[i];
+        const next = bins[(i + 1) % BIN_COUNT];
+        const next2 = bins[(i + 2) % BIN_COUNT];
+        return prev2 * 0.06 + prev * 0.20 + curr * 0.48 + next * 0.20 + next2 * 0.06;
+      });
+    }
+
+    function splatPhaseSample(weightedBins, weightBins, phase, value, addWeight) {
+      // Avoid exact-lock comb aliasing: if carrier and receiver are exactly
+      // frequency-locked, discrete samples revisit the same phase bins forever.
+      // Spread each sample over a compact triangular kernel in phase space,
+      // approximating the continuous wound waveform without changing the math.
+      const pos = (phase / (Math.PI * 2)) * BIN_COUNT;
+      const center = Math.floor(pos);
+      let norm = 0;
+
+      for (let d = -PHASE_SPLAT_RADIUS; d <= PHASE_SPLAT_RADIUS; d++) {
+        const dist = Math.abs(pos - (center + d));
+        const w = Math.max(0, PHASE_SPLAT_RADIUS + 1 - dist);
+        norm += w;
+      }
+
+      for (let d = -PHASE_SPLAT_RADIUS; d <= PHASE_SPLAT_RADIUS; d++) {
+        const dist = Math.abs(pos - (center + d));
+        const w = Math.max(0, PHASE_SPLAT_RADIUS + 1 - dist) / norm;
+        const bin = (center + d + BIN_COUNT * 10) % BIN_COUNT;
+        weightedBins[bin] += value * addWeight * w;
+        weightBins[bin] += addWeight * w;
+      }
+    }
+
+    function binsToPower(smoothed) {
+      const rawPower = smoothed.reduce((acc, v) => acc + Math.abs(v), 0) / smoothed.length;
+      return clamp(rawPower / SINE_ABS_MEAN, 0, 1.25);
+    }
+
+    function runContinuousEmaDecoder(bits, fCarrier, fReceiver, beta, fmDepthPct, cyclesPerBit) {
+      const signal = makeSignalTrace(bits, fCarrier, fmDepthPct, cyclesPerBit);
+      const weightedBins = new Array(BIN_COUNT).fill(0);
+      const weightBins = new Array(BIN_COUNT).fill(0);
+      const emaPowers = [];
+      const snapshots = [];
+      let lastT = signal.trace[0].t;
+
+      for (let i = 0; i < signal.trace.length; i++) {
+        const p = signal.trace[i];
+        const dt = i === 0 ? 0 : Math.max(0, p.t - lastT);
+        const ageTurns = dt * fReceiver;
+        const decay = Math.pow(beta, ageTurns);
+        const addWeight = 1 - decay;
+
+        for (let b = 0; b < BIN_COUNT; b++) {
+          weightedBins[b] *= decay;
+          weightBins[b] *= decay;
+        }
+
+        const receiverPhase = 2 * Math.PI * fReceiver * p.t;
+        const wrappedAngle = ((receiverPhase % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+        splatPhaseSample(weightedBins, weightBins, wrappedAngle, p.signal, addWeight);
+
+        // Per-bin normalization is useful for estimating the carrier amplitude,
+        // but it is wrong for the wound visual: a nearly-empty bin containing
+        // only ancient decayed samples should fade out, not get divided back
+        // up to full strength.  For the visual aggregate, normalize by the
+        // global mean phase occupancy instead, preserving EMA decay/culling
+        // while keeping the displayed waveform on the same rough amplitude
+        // scale as the final-cycle trace.
+        const averaged = weightedBins.map((v, k) => weightBins[k] > 0 ? v / weightBins[k] : 0);
+        const smoothed = smoothBins(averaged);
+        const phaseWeightMean = weightBins.reduce((acc, v) => acc + v, 0) / BIN_COUNT;
+        const visualAveraged = weightedBins.map(v => phaseWeightMean > 1e-9 ? v / phaseWeightMean : 0);
+        const visualSmoothed = smoothBins(visualAveraged);
+        const normalizedPower = binsToPower(smoothed);
+
+        emaPowers.push(normalizedPower);
+        snapshots.push({
+          t: p.t,
+          sampleIndex: i,
+          averaged,
+          smoothed,
+          visualAveraged,
+          visualSmoothed,
+          normalizedPower,
+          receiverPhase,
+          wrappedAngle
+        });
+        lastT = p.t;
+      }
+
+      const boundaryPowers = [];
+      const boundarySampleIndices = [];
+      const boundarySnapshots = [];
+      for (let b = 1; b <= BIT_COUNT; b++) {
+        const idx = Math.min(signal.trace.length - 1, b * signal.samplesPerBit - 1);
+        boundarySampleIndices.push(idx);
+        boundaryPowers.push(emaPowers[idx]);
+        boundarySnapshots.push(snapshots[idx]);
+      }
+
+      let circleBoundary = BIT_COUNT - 1;
+      for (let b = BIT_COUNT - 1; b >= 0; b--) {
+        if (bits[b] === 1) { circleBoundary = b; break; }
+      }
+      const circleIndex = boundarySampleIndices[circleBoundary];
+      const circleSnapshot = snapshots[circleIndex];
+
+      return {
+        ...signal,
+        emaPowers,
+        snapshots,
+        boundaryPowers,
+        boundarySampleIndices,
+        boundarySnapshots,
+        circleIndex,
+        circleSnapshot,
+        circleBoundary
+      };
+    }
+
+    function keyThreshold() {
+      return THRESHOLD;
+    }
+
+    function decodePower(power) {
+      return power >= keyThreshold() ? "1" : "0";
+    }
+
+    function resizeCanvas() {
+      const displayWidth = canvas.clientWidth;
+      const displayHeight = Math.round(displayWidth * 0.92);
+      canvas.style.height = displayHeight + "px";
+      canvas.width = Math.round(displayWidth * DPR);
+      canvas.height = Math.round(displayHeight * DPR);
+      draw();
+    }
+
+    function drawBitBackground(plot, bits) {
+      const bitW = plot.width / BIT_COUNT;
+      for (let b = 0; b < BIT_COUNT; b++) {
+        const x = plot.left + b * bitW;
+        ctx.fillStyle = bits[b] ? "rgba(36, 161, 72, 0.055)" : "rgba(209, 213, 219, 0.17)";
+        ctx.fillRect(x, plot.top, bitW, plot.height);
+        ctx.strokeStyle = "rgba(17, 24, 39, 0.14)";
+        ctx.lineWidth = 1 * DPR;
+        ctx.beginPath();
+        ctx.moveTo(x, plot.top);
+        ctx.lineTo(x, plot.top + plot.height);
+        ctx.stroke();
+        drawText(bits[b].toString(), x + bitW / 2, plot.top + 15 * DPR, {
+          size: 12 * DPR,
+          weight: 800,
+          align: "center",
+          color: bits[b] ? cssVar("--one") : cssVar("--muted")
+        });
+      }
+      ctx.strokeStyle = "rgba(17, 24, 39, 0.14)";
+      ctx.beginPath();
+      ctx.moveTo(plot.left + plot.width, plot.top);
+      ctx.lineTo(plot.left + plot.width, plot.top + plot.height);
+      ctx.stroke();
+    }
+
+    function drawEnvelopeStepPanel(plot, bits, amplitudes, color, title, valueLabel) {
+      drawGrid(plot, 2, BIT_COUNT);
+      drawBitBackground(plot, bits);
+      const bitW = plot.width / BIT_COUNT;
+      const y0 = plot.top + plot.height;
+      const toY = v => y0 - clamp(v, 0, 1.12) / 1.12 * (plot.height - 16 * DPR);
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3 * DPR;
+      ctx.beginPath();
+      for (let b = 0; b < BIT_COUNT; b++) {
+        const x0 = plot.left + b * bitW;
+        const x1p = plot.left + (b + 1) * bitW;
+        const y = toY(amplitudes[b]);
+        if (b === 0) ctx.moveTo(x0, y);
+        else ctx.lineTo(x0, y);
+        ctx.lineTo(x1p, y);
+      }
+      ctx.stroke();
+
+      drawText(title, plot.left, plot.top - 10 * DPR, { size: 12.5 * DPR, weight: 750, color: cssVar("--muted") });
+      drawText(valueLabel, plot.left + plot.width, plot.top - 10 * DPR, { size: 12 * DPR, weight: 650, color: cssVar("--muted"), align: "right" });
+      drawText("0", plot.left - 9 * DPR, y0, { size: 10.5 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+      drawText("1", plot.left - 9 * DPR, toY(1), { size: 10.5 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+    }
+    function drawFmWaveformPanel(plot, bits, fCarrier, fmDepthPct) {
+      drawGrid(plot, 4, BIT_COUNT);
+      drawBitBackground(plot, bits);
+
+      const zeroY = plot.top + plot.height / 2;
+      const padY = 14 * DPR;
+      const ampScale = plot.height / 2 - padY;
+      const toX = bitPos => plot.left + (bitPos / BIT_COUNT) * plot.width;
+      const toY = v => zeroY - clamp(v, -1.12, 1.12) / 1.12 * ampScale;
+      const displayCyclesPerBit = Math.sqrt(fCarrier / 120);
+      const visualFmDepthPct = Math.pow(fmDepthPct / 100, 2) * 100;
+
+      ctx.strokeStyle = cssVar("--axis");
+      ctx.lineWidth = 1.4 * DPR;
+      ctx.beginPath();
+      ctx.moveTo(plot.left, zeroY);
+      ctx.lineTo(plot.left + plot.width, zeroY);
+      ctx.stroke();
+
+      ctx.strokeStyle = cssVar("--carrier");
+      ctx.lineWidth = 2.4 * DPR;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.beginPath();
+
+      const samples = Math.max(700, Math.ceil(BIT_COUNT * displayCyclesPerBit * (1 + visualFmDepthPct / 100) * 160));
+      let phase = 0;
+      let lastBitPos = 0;
+      for (let i = 0; i <= samples; i++) {
+        const bitPos = (i / samples) * BIT_COUNT;
+        const bitIndex = Math.min(BIT_COUNT - 1, Math.floor(bitPos));
+        const freqRatio = bits[bitIndex] ? 1 : (1 + visualFmDepthPct / 100);
+        const dBit = i === 0 ? 0 : bitPos - lastBitPos;
+        phase += 2 * Math.PI * displayCyclesPerBit * freqRatio * dBit;
+        const x = toX(bitPos);
+        const y = toY(Math.sin(phase));
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+        lastBitPos = bitPos;
+      }
+      ctx.stroke();
+
+      drawText("FM'd waveform", plot.left, plot.top - 10 * DPR, {
+        size: 12.5 * DPR,
+        weight: 750,
+        color: cssVar("--muted")
+      });
+      drawText(`detune scales linearly; scale = ${visualFmDepthPct.toFixed(2)}%`, plot.left + plot.width, plot.top - 10 * DPR, {
+        size: 12 * DPR,
+        weight: 650,
+        color: cssVar("--muted"),
+        align: "right"
+      });
+      drawText("-1", plot.left - 9 * DPR, toY(-1), { size: 10.5 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+      drawText("0", plot.left - 9 * DPR, zeroY, { size: 10.5 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+      drawText("1", plot.left - 9 * DPR, toY(1), { size: 10.5 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+    }
+
+    function drawContinuousEmaPanel(plot, result, bits, title, valueLabel) {
+      drawGrid(plot, 2, BIT_COUNT);
+      drawBitBackground(plot, bits);
+
+      const y0 = plot.top + plot.height;
+      const toX = idx => plot.left + (idx / (result.totalSamples - 1)) * plot.width;
+      const toY = v => y0 - clamp(v, 0, 1.12) / 1.12 * (plot.height - 16 * DPR);
+
+      const thY = toY(keyThreshold());
+      ctx.strokeStyle = cssVar("--threshold");
+      ctx.lineWidth = 1.6 * DPR;
+      ctx.setLineDash([6 * DPR, 5 * DPR]);
+      ctx.beginPath();
+      ctx.moveTo(plot.left, thY);
+      ctx.lineTo(plot.left + plot.width, thY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.strokeStyle = cssVar("--ema");
+      ctx.lineWidth = 2.7 * DPR;
+      ctx.beginPath();
+      const stride = Math.max(1, Math.ceil(result.emaPowers.length / 2400));
+      for (let i = 0; i < result.emaPowers.length; i += stride) {
+        const x = toX(i);
+        const y = toY(result.emaPowers[i]);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      const lastIdx = result.emaPowers.length - 1;
+      ctx.lineTo(toX(lastIdx), toY(result.emaPowers[lastIdx]));
+      ctx.stroke();
+
+      for (let b = 0; b < BIT_COUNT; b++) {
+        const idx = result.boundarySampleIndices[b];
+        const power = result.boundaryPowers[b];
+        const x = toX(idx);
+        const y = toY(power);
+        const decoded = decodePower(power);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = cssVar("--ema");
+        ctx.lineWidth = 2.2 * DPR;
+        ctx.beginPath();
+        ctx.arc(x, y, 5 * DPR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        drawText(decoded, plot.left + (b + 0.5) * (plot.width / BIT_COUNT), plot.top + plot.height + 19 * DPR, {
+          size: 14 * DPR,
+          weight: 850,
+          align: "center",
+          color: decoded === "1" ? cssVar("--one") : cssVar("--muted")
+        });
+      }
+
+      drawText(title, plot.left, plot.top - 10 * DPR, { size: 12.5 * DPR, weight: 750, color: cssVar("--muted") });
+      drawText(valueLabel, plot.left + plot.width, plot.top - 10 * DPR, { size: 12 * DPR, weight: 650, color: cssVar("--muted"), align: "right" });
+      drawText("0", plot.left - 9 * DPR, y0, { size: 10.5 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+      drawText("1", plot.left - 9 * DPR, toY(1), { size: 10.5 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+    }
+
+    function getNewestCycleTrace(result, fReceiver) {
+      const snap = result.circleSnapshot;
+      const cycleDuration = 1 / Math.max(1e-9, fReceiver);
+      const cycleStart = Math.max(0, snap.t - cycleDuration);
+      const cycleEnd = snap.t;
+      const newest = result.trace.filter(p => p.t >= cycleStart && p.t <= cycleEnd);
+      return { newest, cycleStart, cycleEnd, cycleDuration, snap };
+    }
+
+    function finalCycleSignalValue(p, newest, phaseLockFinalCycle) {
+      if (!phaseLockFinalCycle || !newest.length) return p.signal;
+      const endPhase = newest[newest.length - 1].phase || 0;
+      return Math.sin(p.phase - endPhase);
+    }
+
+    function buildFinalLockedEmaSmoothed(result, fReceiver, phaseLockFinalCycle) {
+      if (!phaseLockFinalCycle) return result.circleSnapshot.visualSmoothed || result.circleSnapshot.smoothed;
+
+      const snap = result.circleSnapshot;
+      const endPhase = snap && Number.isFinite(snap.sampleIndex)
+        ? (result.trace[snap.sampleIndex].phase || 0)
+        : 0;
+      const weightedBins = new Array(BIN_COUNT).fill(0);
+      const weightBins = new Array(BIN_COUNT).fill(0);
+      const tau = Math.PI * 2;
+      const stepTurns = Math.max(0, result.dt * fReceiver);
+      const sampleAddWeight = 1 - Math.pow(emaBeta.valueAsNumber || 0.9, stepTurns);
+      const cycleStartReceiverPhase = (snap.receiverPhase || 0) - tau;
+
+      for (let i = 0; i <= snap.sampleIndex; i++) {
+        const q = result.trace[i];
+        const ageTurns = Math.max(0, (snap.t - q.t) * fReceiver);
+        const w = sampleAddWeight * Math.pow(emaBeta.valueAsNumber || 0.9, ageTurns);
+        if (w < 1e-7) continue;
+
+        // Fold history into the same receiver-cycle coordinates used by the
+        // orange final-cycle trace: 0 is the start of the final receiver cycle,
+        // 2π is its end.  The signal value is also expressed in the final-cycle
+        // phase frame, so tiny changes in total elapsed carrier cycles cannot
+        // rotate the whole wound aggregate by an unrelated absolute phase.
+        const receiverPhase = tau * fReceiver * q.t;
+        const lockedRelativePhase = wrapPhase(receiverPhase - cycleStartReceiverPhase);
+        const lockedSignal = Math.sin((q.phase || 0) - endPhase);
+        splatPhaseSample(weightedBins, weightBins, lockedRelativePhase, lockedSignal, w);
+      }
+
+      const averaged = weightedBins.map((v, k) => weightBins[k] > 1e-9 ? v / weightBins[k] : 0);
+      return smoothBins(averaged);
+    }
+
+    function finalCycleEmaValue(smoothed, relativePhase) {
+      return sampleCircular(smoothed, relativePhase);
+    }
+
+    function drawCirclePanel(circle, result, fReceiver, title, subLabel, phaseLockFinalCycle = false) {
+      const cx = circle.cx;
+      const cy = circle.cy;
+      const baseR = circle.r;
+      const wiggleR = baseR * 0.34;
+      const { newest, cycleStart, cycleEnd, cycleDuration, snap } = getNewestCycleTrace(result, fReceiver);
+      const lockedEmaSmoothed = buildFinalLockedEmaSmoothed(result, fReceiver, phaseLockFinalCycle);
+      const tau = Math.PI * 2;
+
+      ctx.strokeStyle = cssVar("--grid");
+      ctx.lineWidth = 2 * DPR;
+      ctx.beginPath();
+      ctx.arc(cx, cy, baseR, 0, tau);
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.16)";
+      ctx.lineWidth = 1 * DPR;
+      ctx.beginPath();
+      for (let k = 0; k < 24; k++) {
+        const th = (k / 24) * tau;
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(th) * baseR, cy + Math.sin(th) * baseR);
+      }
+      ctx.stroke();
+
+      // The final receiver cycle is phase-locked to the drawing coordinates.
+      // The EMA aggregate is sampled from absolute receiver phase, so carrier /
+      // receiver detuning visibly shifts the purple aggregate relative to it.
+      ctx.lineWidth = 6.5 * DPR;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      for (let i = 0; i <= BIN_COUNT; i++) {
+        const relativePhase = (i / BIN_COUNT) * tau;
+        const v = finalCycleEmaValue(lockedEmaSmoothed, relativePhase);
+        const r = baseR + v * wiggleR;
+        const x = cx + Math.cos(relativePhase) * r;
+        const y = cy + Math.sin(relativePhase) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = cssVar("--ema");
+      ctx.stroke();
+
+      ctx.lineWidth = 2.4 * DPR;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.78)";
+      ctx.beginPath();
+      for (let i = 0; i <= BIN_COUNT; i++) {
+        const relativePhase = (i / BIN_COUNT) * tau;
+        const v = finalCycleEmaValue(lockedEmaSmoothed, relativePhase);
+        const r = baseR + v * wiggleR;
+        const x = cx + Math.cos(relativePhase) * r;
+        const y = cy + Math.sin(relativePhase) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      ctx.strokeStyle = cssVar("--power");
+      ctx.lineWidth = 4.2 * DPR;
+      ctx.beginPath();
+      let anyMoved = false;
+      for (let i = 0; i < newest.length; i++) {
+        const p = newest[i];
+        const relativePhase = clamp((p.t - cycleStart) / Math.max(1e-9, cycleEnd - cycleStart), 0, 1) * tau;
+        const r = baseR + finalCycleSignalValue(p, newest, phaseLockFinalCycle) * wiggleR;
+        const x = cx + Math.cos(relativePhase) * r;
+        const y = cy + Math.sin(relativePhase) * r;
+        if (!anyMoved) { ctx.moveTo(x, y); anyMoved = true; }
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = cssVar("--receiver");
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4.8 * DPR, 0, tau);
+      ctx.fill();
+
+      drawText(title, cx, cy - baseR - 24 * DPR, {
+        size: 12 * DPR,
+        weight: 750,
+        color: cssVar("--muted"),
+        align: "center"
+      });
+      drawText(subLabel, cx, cy + baseR + 18 * DPR, {
+        size: 11 * DPR,
+        color: cssVar("--muted"),
+        align: "center"
+      });
+    }
+
+    function drawUnwrappedPanel(plot, result, fReceiver, title, phaseLockFinalCycle = false) {
+      const { newest, cycleStart, cycleEnd, snap } = getNewestCycleTrace(result, fReceiver);
+      const lockedEmaSmoothed = buildFinalLockedEmaSmoothed(result, fReceiver, phaseLockFinalCycle);
+      const ampMax = 1.15;
+      const zeroY = plot.top + plot.height / 2;
+      const padY = 14 * DPR;
+      const ampScale = (plot.height / 2 - padY) / ampMax;
+      const tau = Math.PI * 2;
+      const toXPhase = phase => plot.left + (phase / tau) * plot.width;
+      const toY = v => zeroY - clamp(v, -ampMax, ampMax) * ampScale;
+
+      drawGrid(plot, 4, 12);
+      ctx.strokeStyle = cssVar("--axis");
+      ctx.lineWidth = 1.4 * DPR;
+      ctx.beginPath();
+      ctx.moveTo(plot.left, zeroY);
+      ctx.lineTo(plot.left + plot.width, zeroY);
+      ctx.moveTo(plot.left, plot.top);
+      ctx.lineTo(plot.left, plot.top + plot.height);
+      ctx.stroke();
+
+      ctx.strokeStyle = cssVar("--ema");
+      ctx.lineWidth = 3.4 * DPR;
+      ctx.beginPath();
+      for (let i = 0; i <= BIN_COUNT; i++) {
+        const relativePhase = (i / BIN_COUNT) * tau;
+        const x = toXPhase(relativePhase);
+        const y = toY(finalCycleEmaValue(lockedEmaSmoothed, relativePhase));
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      if (newest.length > 1) {
+        ctx.strokeStyle = cssVar("--power");
+        ctx.lineWidth = 2.8 * DPR;
+        ctx.beginPath();
+        for (let i = 0; i < newest.length; i++) {
+          const p = newest[i];
+          const relativePhase = clamp((p.t - cycleStart) / Math.max(1e-9, cycleEnd - cycleStart), 0, 1) * tau;
+          const x = toXPhase(relativePhase);
+          const y = toY(finalCycleSignalValue(p, newest, phaseLockFinalCycle));
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      drawText(title, plot.left, plot.top - 10 * DPR, {
+        size: 12 * DPR,
+        weight: 750,
+        color: cssVar("--muted")
+      });
+
+      drawText("-1", plot.left - 9 * DPR, toY(-1), { size: 10.5 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+      drawText("0", plot.left - 9 * DPR, zeroY, { size: 10.5 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+      drawText("1", plot.left - 9 * DPR, toY(1), { size: 10.5 * DPR, color: cssVar("--muted"), align: "right", baseline: "middle" });
+      drawText("0°", plot.left, plot.top + plot.height + 16 * DPR, { size: 10.5 * DPR, color: cssVar("--muted"), align: "left" });
+      drawText("180°", plot.left + plot.width / 2, plot.top + plot.height + 16 * DPR, { size: 10.5 * DPR, color: cssVar("--muted"), align: "center" });
+      drawText("360°", plot.left + plot.width, plot.top + plot.height + 16 * DPR, { size: 10.5 * DPR, color: cssVar("--muted"), align: "right" });
+    }
+
+    function draw() {
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+
+      const bitsText = sanitizeBits(bitInput.value);
+      const bits = bitsText.split("").map(Number);
+      const fmDepthPct = +fmDepth.value;
+      const fCarrier = +carrierFreq.value;
+      const cyclesPerBit = +carrierCycles.value;
+      const fReceiver = +receiverFreq.value;
+      const beta = +emaBeta.value;
+      const result = runContinuousEmaDecoder(bits, fCarrier, fReceiver, beta, fmDepthPct, cyclesPerBit);
+      const totalDurationMs = result.totalDuration * 1000;
+      const bitDurationMs = result.bitDuration * 1000;
+      const frequencyError = fReceiver - fCarrier;
+      const decodedBits = result.boundaryPowers.map(power => decodePower(power)).join("");
+
+      cleanBitsVal.textContent = bitsText;
+      fmDepthVal.textContent = `${fmDepthPct}%`;
+      carrierFreqVal.textContent = `${fCarrier} Hz`;
+      carrierCyclesVal.textContent = `${cyclesPerBit}`;
+      receiverFreqVal.textContent = `${fReceiver} Hz`;
+      emaBetaVal.textContent = `β=${beta.toFixed(3)}`;
+
+      const oneKeyResult = runContinuousEmaDecoder(
+        new Array(BIT_COUNT).fill(1),
+        fCarrier,
+        fReceiver,
+        beta,
+        fmDepthPct,
+        cyclesPerBit
+      );
+      const zeroKeyResult = runContinuousEmaDecoder(
+        new Array(BIT_COUNT).fill(0),
+        fCarrier,
+        fReceiver,
+        beta,
+        fmDepthPct,
+        cyclesPerBit
+      );
+
+      const pad = { left: 45 * DPR, right: 30 * DPR, top: 52 * DPR, bottom: 42 * DPR };
+      drawText("Frequency Modulation: EMA Winding Decoder", pad.left, 24 * DPR, {
+        size: 16 * DPR,
+        weight: 750
+      });
+      const availableH = height - pad.top - pad.bottom;
+      const plotW = width - pad.left - pad.right;
+
+      const waveformPlot = {
+        left: pad.left,
+        top: pad.top,
+        width: plotW,
+        height: availableH * 0.13
+      };
+
+      const rowH = availableH * 0.235;
+      const oneTop = pad.top + availableH * 0.225;
+      const zeroTop = pad.top + availableH * 0.505;
+      const circleX = pad.left + plotW * 0.23;
+      const unwrapLeft = pad.left + plotW * 0.47;
+      const unwrapW = plotW * 0.49;
+      const circleR = Math.min(plotW * 0.105, rowH * 0.30);
+
+      const oneCircle = {
+        cx: circleX,
+        cy: oneTop + rowH * 0.55,
+        r: circleR
+      };
+      const zeroCircle = {
+        cx: circleX,
+        cy: zeroTop + rowH * 0.55,
+        r: circleR
+      };
+      const oneUnwrapPlot = {
+        left: unwrapLeft,
+        top: oneTop + rowH * 0.13,
+        width: unwrapW,
+        height: rowH * 0.70
+      };
+      const zeroUnwrapPlot = {
+        left: unwrapLeft,
+        top: zeroTop + rowH * 0.13,
+        width: unwrapW,
+        height: rowH * 0.70
+      };
+
+      const emaPlot = {
+        left: pad.left,
+        top: pad.top + availableH * 0.835,
+        width: plotW,
+        height: availableH * 0.135
+      };
+
+      drawFmWaveformPanel(waveformPlot, bits, fCarrier, fmDepthPct);
+      drawCirclePanel(oneCircle, oneKeyResult, fReceiver, "1-key wound EMA aggregate", "final receiver cycle phase-locked", true);
+      drawUnwrappedPanel(oneUnwrapPlot, oneKeyResult, fReceiver, "1-key unwrapped", true);
+      drawCirclePanel(zeroCircle, zeroKeyResult, fReceiver, "0-key wound EMA aggregate", "final receiver cycle phase-locked", true);
+      drawUnwrappedPanel(zeroUnwrapPlot, zeroKeyResult, fReceiver, "0-key unwrapped", true);
+      drawContinuousEmaPanel(
+        emaPlot,
+        result,
+        bits,
+        "Continuous EMA coherence; decode samples before key-window changes",
+        `decoded: ${decodedBits}`
+      );
+
+    }
+
+    bitInput.addEventListener("input", () => {
+      const raw = bitInput.value;
+      const cleaned = (raw.match(/[01]/g) || []).join("").slice(0, BIT_COUNT);
+      if (raw !== cleaned) bitInput.value = cleaned;
+      draw();
+    });
+
+    [fmDepth, carrierFreq, carrierCycles, receiverFreq, emaBeta].forEach(el => el.addEventListener("input", draw));
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+  </script>
+

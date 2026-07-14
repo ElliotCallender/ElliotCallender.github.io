@@ -1,0 +1,585 @@
+
+
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EMA Receiver Winding / Phase-Summed Signal</title>
+  <style>
+    :root {
+      --bg: #fbfbfd;
+      --panel: #ffffff;
+      --text: #1f2430;
+      --muted: #6b7280;
+      --border: #d9dee7;
+      --carrier: #2563eb;
+      --receiver: #a855f7;
+      --ema: #8b5cf6;
+      --sum: #111827;
+      --power: #f59e0b;
+      --grid: #e9edf4;
+      --axis: #b8c2d1;
+      --positive: #24a148;
+      --negative: #cf2f2f;
+    }
+
+    html, body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 8px 28px rgba(22, 30, 50, 0.08);
+      overflow: hidden;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      align-items: end;
+    }
+
+    .control {
+      min-width: 0;
+    }
+
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .value {
+      color: var(--muted);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--carrier);
+    }
+
+    #receiverFreq {
+      accent-color: var(--receiver);
+    }
+
+    #emaBeta {
+      accent-color: var(--ema);
+    }
+
+    .canvas-wrap {
+      padding: 14px;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 14px;
+      background: #ffffff;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 0 16px 16px 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .swatch {
+      width: 20px;
+      height: 4px;
+      border-radius: 999px;
+      background: #000;
+    }
+
+    .swatch.carrier { background: var(--carrier); }
+    .swatch.receiver { background: var(--receiver); }
+    .swatch.ema { background: var(--ema); }
+    .swatch.sum { background: var(--sum); }
+
+    .swatch.fade {
+      width: 32px;
+      background: linear-gradient(90deg, rgba(168,85,247,0.12), rgba(168,85,247,0.95));
+      border: 1px solid #d7dde7;
+    }
+
+    .swatch.signed {
+      width: 28px;
+      height: 10px;
+      background: linear-gradient(90deg, var(--negative), #ffffff, var(--positive));
+      border: 1px solid #d7dde7;
+    }
+
+    @media (max-width: 900px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+
+  <div class="wrap">
+    <div class="card">
+      <div class="controls">
+        <div class="control">
+          <label>
+            <span>Carrier frequency</span>
+            <span class="value" id="carrierFreqVal">440 Hz</span>
+          </label>
+          <input id="carrierFreq" type="range" min="100" max="1200" step="1" value="440">
+        </div>
+
+        <div class="control">
+          <label>
+            <span>Carrier phase</span>
+            <span class="value" id="carrierPhaseVal">0°</span>
+          </label>
+          <input id="carrierPhase" type="range" min="0" max="360" step="1" value="0">
+        </div>
+
+        <div class="control">
+          <label>
+            <span>Receiver frequency</span>
+            <span class="value" id="receiverFreqVal">440 Hz</span>
+          </label>
+          <input id="receiverFreq" type="range" min="100" max="1200" step="1" value="440">
+        </div>
+
+        <div class="control">
+          <label>
+            <span>EMA beta</span>
+            <span class="value" id="emaBetaVal">β=0.900 · 10.0 useful turns</span>
+          </label>
+          <input id="emaBeta" type="range" min="0.500" max="0.985" step="0.001" value="0.900">
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="plot" width="1400" height="860"></canvas>
+      </div>
+
+      <div class="legend">
+        <div class="legend-item"><span class="swatch sum"></span><span>EMA-weighted phase average</span></div>
+        <div class="legend-item"><span class="swatch" style="background: var(--power);"></span><span>Power radius = absolute area of EMA-weighted unwound signal</span></div>
+        <div class="legend-item"><span class="swatch signed"></span><span>Green = positive amplitude, red = negative amplitude</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("plot");
+    const ctx = canvas.getContext("2d");
+
+    const carrierFreq = document.getElementById("carrierFreq");
+    const carrierPhase = document.getElementById("carrierPhase");
+    const receiverFreq = document.getElementById("receiverFreq");
+    const emaBeta = document.getElementById("emaBeta");
+
+    const carrierFreqVal = document.getElementById("carrierFreqVal");
+    const carrierPhaseVal = document.getElementById("carrierPhaseVal");
+    const receiverFreqVal = document.getElementById("receiverFreqVal");
+    const emaBetaVal = document.getElementById("emaBetaVal");
+
+    const DPR = Math.max(1, window.devicePixelRatio || 1);
+    const MIN_DISPLAY_TURNS = 1.5;
+    const MAX_DISPLAY_TURNS = 80;
+    const SAMPLES_PER_TURN = 260;
+
+    function cssVar(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function resizeCanvas() {
+      const displayWidth = canvas.clientWidth;
+      const displayHeight = Math.round(displayWidth * 0.62);
+      canvas.style.height = displayHeight + "px";
+      canvas.width = Math.round(displayWidth * DPR);
+      canvas.height = Math.round(displayHeight * DPR);
+      draw();
+    }
+
+    function toRad(deg) {
+      return deg * Math.PI / 180;
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function signedColor(v, alpha = 1) {
+      const t = Math.min(1, Math.abs(v));
+      const neg = { r: 207, g: 47, b: 47 };
+      const pos = { r: 36, g: 161, b: 72 };
+      const white = { r: 255, g: 255, b: 255 };
+      const target = v >= 0 ? pos : neg;
+
+      const r = Math.round(lerp(white.r, target.r, t));
+      const g = Math.round(lerp(white.g, target.g, t));
+      const b = Math.round(lerp(white.b, target.b, t));
+
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    function signedWeightedColor(v, relativeWeight) {
+      const minA = 0.008;
+      const maxA = 0.98;
+      const w = Math.max(0, Math.min(1, relativeWeight));
+      const shaped = Math.pow(w, 2.35);
+      const alpha = minA + (maxA - minA) * shaped;
+      return signedColor(v, alpha);
+    }
+
+    function drawGrid(plot, horizontalCount = 4, verticalCount = 12) {
+      ctx.lineWidth = 1 * DPR;
+      ctx.strokeStyle = cssVar("--grid");
+      ctx.beginPath();
+
+      for (let i = 0; i <= verticalCount; i++) {
+        const x = plot.left + (i / verticalCount) * plot.width;
+        ctx.moveTo(x, plot.top);
+        ctx.lineTo(x, plot.top + plot.height);
+      }
+
+      for (let i = 0; i <= horizontalCount; i++) {
+        const y = plot.top + (i / horizontalCount) * plot.height;
+        ctx.moveTo(plot.left, y);
+        ctx.lineTo(plot.left + plot.width, y);
+      }
+
+      ctx.stroke();
+    }
+
+    function drawAxes(plot, zeroY) {
+      ctx.strokeStyle = cssVar("--axis");
+      ctx.lineWidth = 1.5 * DPR;
+      ctx.beginPath();
+      ctx.moveTo(plot.left, zeroY);
+      ctx.lineTo(plot.left + plot.width, zeroY);
+      ctx.moveTo(plot.left, plot.top);
+      ctx.lineTo(plot.left, plot.top + plot.height);
+      ctx.stroke();
+    }
+
+    function drawTitle(pad, beta, renderedTurns, receiverHz, historyMs) {
+      ctx.fillStyle = "#111827";
+      ctx.font = `600 ${16 * DPR}px system-ui, sans-serif`;
+      ctx.textAlign = "left";
+      ctx.fillText("EMA Receiver Winding / Phase-Summed Signal", pad.left, 20 * DPR);
+
+      ctx.fillStyle = "#6b7280";
+      ctx.font = `${12.5 * DPR}px system-ui, sans-serif`;
+      ctx.fillText(
+        `Receiver frequency is independent. β=${beta.toFixed(3)} renders ${renderedTurns.toFixed(1)} useful turns of EMA-weighted history (${historyMs.toFixed(1)} ms at ${Math.round(receiverHz)} Hz).`,
+        pad.left,
+        40 * DPR
+      );
+    }
+
+    function drawCirclePanel(circle, samples, carrierAmps, receiverAngles, relativeWeights) {
+      const cx = circle.cx;
+      const cy = circle.cy;
+      const baseR = circle.r;
+      const wiggleR = baseR * 0.19;
+
+      ctx.strokeStyle = cssVar("--grid");
+      ctx.lineWidth = 2 * DPR;
+      ctx.beginPath();
+      ctx.arc(cx, cy, baseR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = cssVar("--receiver");
+      ctx.lineWidth = 2.5 * DPR;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + baseR * 1.15, cy);
+      ctx.stroke();
+
+      const spokeCount = 24;
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.16)";
+      ctx.lineWidth = 1 * DPR;
+      ctx.beginPath();
+
+      for (let i = 0; i < spokeCount; i++) {
+        const th = (i / spokeCount) * Math.PI * 2;
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(th) * baseR, cy + Math.sin(th) * baseR);
+      }
+
+      ctx.stroke();
+
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = 3 * DPR;
+
+      for (let i = 0; i < samples - 1; i++) {
+        const a0 = carrierAmps[i];
+        const a1 = carrierAmps[i + 1];
+
+        const th0 = receiverAngles[i];
+        const th1 = receiverAngles[i + 1];
+
+        const r0 = baseR + a0 * wiggleR;
+        const r1 = baseR + a1 * wiggleR;
+
+        const x0 = cx + Math.cos(th0) * r0;
+        const y0 = cy + Math.sin(th0) * r0;
+        const x1 = cx + Math.cos(th1) * r1;
+        const y1 = cy + Math.sin(th1) * r1;
+
+        const relWeight = (relativeWeights[i] + relativeWeights[i + 1]) * 0.5;
+
+        ctx.strokeStyle = signedWeightedColor((a0 + a1) * 0.5, relWeight);
+        ctx.beginPath();
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = cssVar("--receiver");
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4.5 * DPR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawPowerCircle(power, normalizedPower) {
+      const cx = power.cx;
+      const cy = power.cy;
+      const maxR = power.r;
+      const r = Math.max(3 * DPR, maxR * Math.max(0, Math.min(1, normalizedPower)));
+
+      ctx.strokeStyle = cssVar("--grid");
+      ctx.lineWidth = 2 * DPR;
+      ctx.beginPath();
+      ctx.arc(cx, cy, maxR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(245, 158, 11, 0.18)";
+      ctx.strokeStyle = cssVar("--power");
+      ctx.lineWidth = 3 * DPR;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = cssVar("--power");
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4.5 * DPR, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawFlatPanel(plot, bins) {
+      const zeroY = plot.top + plot.height / 2;
+      const amp = plot.height * 0.42;
+      const binW = plot.width / bins.length;
+
+      drawGrid(plot, 4, 12);
+      drawAxes(plot, zeroY);
+
+      const normalizedBins = bins.map(v => {
+        return Math.max(-1.25, Math.min(1.25, v));
+      });
+
+      for (let i = 0; i < normalizedBins.length; i++) {
+        const normalized = normalizedBins[i];
+        const x = plot.left + i * binW;
+        const y = zeroY - normalized * amp;
+        const h = Math.abs(y - zeroY);
+
+        ctx.fillStyle = signedColor(normalized, 0.75);
+        ctx.fillRect(x, Math.min(y, zeroY), Math.max(1 * DPR, binW + 0.25 * DPR), h);
+      }
+
+      ctx.strokeStyle = cssVar("--sum");
+      ctx.lineWidth = 3 * DPR;
+      ctx.beginPath();
+
+      for (let i = 0; i < normalizedBins.length; i++) {
+        const normalized = normalizedBins[i];
+        const x = plot.left + (i + 0.5) * binW;
+        const y = zeroY - normalized * amp;
+
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+
+      ctx.stroke();
+
+      ctx.strokeStyle = "rgba(17, 24, 39, 0.25)";
+      ctx.lineWidth = 1.5 * DPR;
+      ctx.beginPath();
+      ctx.moveTo(plot.left, zeroY);
+      ctx.lineTo(plot.left + plot.width, zeroY);
+      ctx.stroke();
+
+      ctx.fillStyle = "#6b7280";
+      ctx.font = `${11.5 * DPR}px system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("0°", plot.left, plot.top + plot.height + 18 * DPR);
+      ctx.fillText("180°", plot.left + plot.width / 2, plot.top + plot.height + 18 * DPR);
+      ctx.fillText("360°", plot.left + plot.width, plot.top + plot.height + 18 * DPR);
+    }
+
+    function draw() {
+      const width = canvas.width;
+      const height = canvas.height;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+
+      const pad = {
+        left: 28 * DPR,
+        right: 30 * DPR,
+        top: 58 * DPR,
+        bottom: 54 * DPR
+      };
+
+      const fCarrier = +carrierFreq.value;
+      const phase = toRad(+carrierPhase.value);
+      const fReceiver = +receiverFreq.value;
+      const beta = +emaBeta.value;
+
+      /*
+        Receiver frequency controls phase winding. EMA beta controls how far
+        back it is worth rendering/calculating.
+
+        Per completed receiver turn, the relative contribution is beta^ageTurns.
+        The standard EMA effective memory length is about 1 / (1 - beta) turns.
+        We render that much useful history, clamped so extreme beta values stay fast.
+      */
+      const effectiveTurns = 1 / (1 - beta);
+      const renderedTurns = Math.max(
+        MIN_DISPLAY_TURNS,
+        Math.min(MAX_DISPLAY_TURNS, effectiveTurns)
+      );
+      const historyDuration = renderedTurns / fReceiver;
+
+      carrierFreqVal.textContent = `${fCarrier} Hz`;
+      carrierPhaseVal.textContent = `${carrierPhase.value}°`;
+      receiverFreqVal.textContent = `${fReceiver} Hz`;
+      emaBetaVal.textContent = `β=${beta.toFixed(3)} · ${renderedTurns.toFixed(1)} turns`;
+
+      drawTitle(pad, beta, renderedTurns, fReceiver, historyDuration * 1000);
+
+      const contentTop = pad.top;
+      const contentH = height - pad.top - pad.bottom;
+      const circleH = contentH * 0.55;
+      const flatTop = contentTop + circleH + 32 * DPR;
+      const flatH = contentH - circleH - 32 * DPR;
+
+      const upperCy = contentTop + circleH / 2;
+      const circleR = Math.min(width * 0.19, circleH * 0.39);
+      const circle = {
+        cx: width * 0.39,
+        cy: upperCy,
+        r: circleR
+      };
+
+      const powerCircle = {
+        cx: width * 0.74,
+        cy: upperCy,
+        r: circleR * 0.72
+      };
+
+      const flatPlot = {
+        left: pad.left,
+        top: flatTop,
+        width: width - pad.left - pad.right,
+        height: flatH - 22 * DPR
+      };
+
+      const samples = Math.min(22000, Math.max(1200, Math.ceil(renderedTurns * SAMPLES_PER_TURN)));
+      const binCount = 180;
+      const weightedBins = new Array(binCount).fill(0);
+      const weightBins = new Array(binCount).fill(0);
+      const carrierAmps = new Array(samples);
+      const receiverAngles = new Array(samples);
+      const relativeWeights = new Array(samples);
+
+      for (let i = 0; i < samples; i++) {
+        const u = i / (samples - 1);
+
+        // Draw history left-to-right from oldest to newest. t=0 is now;
+        // negative t samples are prior history within the EMA tail.
+        const ageTurns = renderedTurns * (1 - u);
+        const t = -ageTurns / fReceiver;
+
+        const carrierAmp = Math.sin(2 * Math.PI * fCarrier * t + phase);
+        const receiverAngle = 2 * Math.PI * fReceiver * t;
+        const wrappedAngle = ((receiverAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+        // Relative to newest point. Full EMA weight is (1-beta)*beta^ageTurns;
+        // relativeWeight is used for alpha fade, while emaWeight is accumulated.
+        const relativeWeight = Math.pow(beta, ageTurns);
+        const emaWeight = (1 - beta) * relativeWeight;
+
+        const bin = Math.min(
+          binCount - 1,
+          Math.floor((wrappedAngle / (2 * Math.PI)) * binCount)
+        );
+
+        carrierAmps[i] = carrierAmp;
+        receiverAngles[i] = wrappedAngle;
+        relativeWeights[i] = relativeWeight;
+
+        weightedBins[bin] += carrierAmp * emaWeight;
+        weightBins[bin] += emaWeight;
+      }
+
+      const emaAveragedBins = weightedBins.map((v, i) => {
+        return weightBins[i] > 0 ? v / weightBins[i] : 0;
+      });
+
+      const smoothed = emaAveragedBins.map((_, i) => {
+        const prev = emaAveragedBins[(i - 1 + binCount) % binCount];
+        const curr = emaAveragedBins[i];
+        const next = emaAveragedBins[(i + 1) % binCount];
+        return prev * 0.18 + curr * 0.64 + next * 0.18;
+      });
+
+      const power = smoothed.reduce((acc, v) => acc + Math.abs(v), 0) / smoothed.length;
+
+      drawCirclePanel(circle, samples, carrierAmps, receiverAngles, relativeWeights);
+      drawPowerCircle(powerCircle, power);
+      drawFlatPanel(flatPlot, smoothed);
+    }
+
+    [carrierFreq, carrierPhase, receiverFreq, emaBeta].forEach(el => {
+      el.addEventListener("input", draw);
+    });
+
+    window.addEventListener("resize", resizeCanvas);
+
+    resizeCanvas();
+  </script>
+
